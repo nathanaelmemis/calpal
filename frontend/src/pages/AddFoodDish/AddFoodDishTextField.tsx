@@ -1,7 +1,7 @@
 import { Grid, Autocomplete, TextField, useMediaQuery, useTheme } from "@mui/material"
 import { SyntheticEvent, useState } from "react"
-import { DishInterface, FoodInterface } from "../Interface"
-import { CalculatorTextField } from "./CalculatorTextField"
+import { DishInterface, FoodInterface } from "../../Interface"
+import { CalculatorTextField } from "../../components/CalculatorTextField"
 
 interface AddFoodDishTextFieldProps {
     setIsDish: Function

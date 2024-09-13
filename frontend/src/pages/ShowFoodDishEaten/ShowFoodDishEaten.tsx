@@ -1,7 +1,7 @@
 import { Box, Divider, Fade, Grid, Typography, useMediaQuery, useTheme } from "@mui/material";
-import Header from "../components/Header";
-import { FoodEatenInterface, DishEatenInterface } from "../Interface";
-import { NavigateButtonCard } from "../components/NavigateButtonCard";
+import Header from "../../components/Header";
+import { FoodEatenInterface, DishEatenInterface } from "../../Interface";
+import { NavigateButtonCard } from "../../components/NavigateButtonCard";
 import { Edit as EditIcon} from '@mui/icons-material';
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";

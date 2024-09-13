@@ -1,10 +1,10 @@
 import { Grid, TextField, useMediaQuery, useTheme } from "@mui/material";
-import { FoodDataInterface } from "../Interface";
+import { FoodDataInterface } from "../../Interface";
 import { useState } from "react";
 import CreateFoodButtons from "./CreateFoodButtons";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { CalculatorTextField } from "./CalculatorTextField";
+import { CalculatorTextField } from "../../components/CalculatorTextField";
 
 interface CreateFoodFormInterface {
     getAndHandleUserData: Function

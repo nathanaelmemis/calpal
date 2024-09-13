@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { DishInterface } from "../Interface"
-import { CalculatorTextField } from "./CalculatorTextField"
+import { DishInterface } from "../../Interface"
+import { CalculatorTextField } from "../../components/CalculatorTextField"
 
 interface AddDishCardServingProps {
     selectedFood: string,

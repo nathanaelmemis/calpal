@@ -1,5 +1,5 @@
 import { Grid, Typography, useMediaQuery, useTheme } from "@mui/material"
-import { UserDataInterface } from "../Interface"
+import { UserDataInterface } from "../../Interface"
 
 interface AddFoodDishCardTitleProps {
     mealType: string

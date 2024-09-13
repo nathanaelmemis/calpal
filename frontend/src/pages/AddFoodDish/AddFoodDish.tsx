@@ -1,14 +1,14 @@
 import { Grid, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 
-import Header from "../components/Header";
-import { AddFoodCard } from "../components/AddFoodCard";
-import { MacrosCard } from "../components/MacrosCard";
+import Header from "../../components/Header";
+import { AddFoodCard } from "./AddFoodCard";
+import { MacrosCard } from "../../components/MacrosCard";
 
-import { DishInterface, FoodInterface, MealsDishEatenInterface, MealsFoodEatenInterface, TotalMacrosInterface, UserDataInterface } from "../Interface";
+import { DishInterface, FoodInterface, MealsDishEatenInterface, MealsFoodEatenInterface, TotalMacrosInterface, UserDataInterface } from "../../Interface";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import AddDishCard from "../components/AddDishCard";
+import AddDishCard from "./AddDishCard";
 
 interface AddFoodInterface {
     isDataPresent: boolean,

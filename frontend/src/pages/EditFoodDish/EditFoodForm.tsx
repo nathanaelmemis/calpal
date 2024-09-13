@@ -1,9 +1,9 @@
-import { Autocomplete, Grid, Stack, TextField } from "@mui/material";
-import { FoodInterface } from "../Interface";
+import { Autocomplete, Grid, TextField } from "@mui/material";
+import { FoodInterface } from "../../Interface";
 import { useEffect, useState } from "react";
 import EditFoodDishButtons from "./EditFoodDishButtons";
 import axios from "axios";
-import { CalculatorTextField } from "./CalculatorTextField";
+import { CalculatorTextField } from "../../components/CalculatorTextField";
 
 interface EditFoodFormProps {
     getAndHandleUserData: () => void

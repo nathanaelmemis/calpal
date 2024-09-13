@@ -21,23 +21,6 @@ interface DetailedFoodEatenInterface extends FoodEatenInterface {
     fats: number
 }
 
-interface FoodInterface {
-    _id: string,
-    userID: string,
-    name: string,
-    calories: number,
-    carbs: number,
-    protein: number,
-    fats: number,
-}
-
-interface DishInterface {
-    _id: string,
-    userID: string,
-    name: string,
-    foods: DetailedFoodEatenInterface[],
-}
-
 export async function getUserData(req: Request, res: Response) {
     try {
         await client.connect()

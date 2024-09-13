@@ -2,7 +2,7 @@ import { Grid, useMediaQuery, useTheme } from "@mui/material";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DishInterface, FoodInterface, MealsDishEatenInterface, MealsFoodEatenInterface, UserDataInterface } from "../Interface";
+import { DishInterface, FoodInterface, MealsDishEatenInterface, MealsFoodEatenInterface, UserDataInterface } from "../../Interface";
 import AddFoodDishButtons from "./AddFoodDishButtons";
 import AddFoodDishCardTitle from "./AddFoodDishCardTitle";
 import AddFoodDishTextField from "./AddFoodDishTextField";

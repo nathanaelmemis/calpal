@@ -6,9 +6,9 @@ import { useEffect, useState } from "react";
 import CryptoJS from "crypto-js"
 import axios from "axios";
 
-import Header from "../components/Header";
+import Header from "../../components/Header";
 import { Link, useNavigate } from 'react-router-dom';
-import { EmailTextField } from '../components/EmailTextField';
+import { EmailTextField } from '../../components/EmailTextField';
 
 export function Register() {
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))

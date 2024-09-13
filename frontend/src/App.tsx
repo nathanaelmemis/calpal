@@ -2,23 +2,24 @@ import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Container } from '@mui/material';
 
-import { Dashboard } from './routes/Dashboard';
-import { Login } from './routes/Login';
-import AddFoodDish from './routes/AddFoodDish';
-import CreateFoodDish from './routes/CreateFoodDish';
+import { Dashboard } from './pages/Dashboard/Dashboard';
+import { Login } from './pages/Login/Login';
+import AddFoodDish from './pages/AddFoodDish/AddFoodDish';
+import CreateFoodDish from './pages/CreateFoodDish/CreateFoodDish';
 
 import { DetailedDishEatenInterface, DetailedFoodEatenInterface, DishFoodInterface, DishInterface, FoodInterface, MealsDishEatenInterface, MealsFoodEatenInterface, TotalMacrosInterface, UserDataInterface } from './Interface';
 import axios from 'axios';
-import { UserDataSettings } from './routes/UserDataSettings';
-import EditFoodDish from './routes/EditFoodDish';
-import { ShowFoodDishEaten } from './routes/ShowFoodDishEaten';
-import EditFoodDishEaten from './routes/EditFoodDishEaten';
-import { Register } from './routes/Register';
-import { ChangePassword } from './routes/ChangePassword';
+import { UserDataSettings } from './pages/UserDataSettings/UserDataSettings';
+import EditFoodDish from './pages/EditFoodDish/EditFoodDish';
+import { ShowFoodDishEaten } from './pages/ShowFoodDishEaten/ShowFoodDishEaten';
+import EditFoodDishEaten from './pages/EditFoodDishEaten/EditFoodDishEaten';
+import { Register } from './pages/Register/Register';
+import { ChangePassword } from './pages/ChangePassword/ChangePassword';
 
 export function App() {
     const navigate = useNavigate()
     
+    // TODO: Refactor code to use useContext
     const [isDataPresent, setIsDataPresent]: [boolean, Function] = useState(false)
     const [userData, setUserData]: [UserDataInterface, Function] = useState({ 
         name: '',

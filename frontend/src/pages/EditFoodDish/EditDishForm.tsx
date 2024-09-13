@@ -1,6 +1,6 @@
 import { Grid, Autocomplete, TextField, IconButton, Button } from "@mui/material";
 import { useEffect, useState } from "react";
-import { DishFoodInterface, DishInterface, FoodInterface } from "../Interface";
+import { DishFoodInterface, DishInterface, FoodInterface } from "../../Interface";
 import { RemoveCircle as RemoveCircleIcon, AddCircle as AddCircleIcon } from '@mui/icons-material';
 import EditDishFormFoodRowTextField from "./EditDishFormFoodRowTextField";
 import EditFoodDishButtons from "./EditFoodDishButtons";

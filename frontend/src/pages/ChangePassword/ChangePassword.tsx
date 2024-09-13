@@ -1,11 +1,11 @@
 import { Box, Button, Grid, Stack, TextField, Typography, useMediaQuery, useTheme } from "@mui/material"
-import Header from "../components/Header"
+import Header from "../../components/Header"
 import { useEffect, useState } from "react"
 import { LoadingButton } from "@mui/lab"
 import { useNavigate } from "react-router-dom"
 import CryptoJS from "crypto-js"
 import axios from "axios"
-import { EmailTextField } from "../components/EmailTextField"
+import { EmailTextField } from "../../components/EmailTextField"
 
 interface ChangePasswordProps {
     isDataPresent: boolean

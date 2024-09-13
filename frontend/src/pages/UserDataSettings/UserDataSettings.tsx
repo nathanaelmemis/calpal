@@ -1,6 +1,6 @@
 import { Button, Grid, TextField, Typography, useMediaQuery, useTheme } from "@mui/material"
-import Header from "../components/Header"
-import { UserDataInterface } from "../Interface"
+import Header from "../../components/Header"
+import { UserDataInterface } from "../../Interface"
 import { useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react"
 import axios from "axios"

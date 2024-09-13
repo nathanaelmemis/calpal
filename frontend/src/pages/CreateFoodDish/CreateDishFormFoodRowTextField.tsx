@@ -1,7 +1,7 @@
 import { Autocomplete, Grid, TextField, useMediaQuery, useTheme } from "@mui/material";
-import { DishDataInterface, FoodInterface } from "../Interface";
+import { DishDataInterface, FoodInterface } from "../../Interface";
 import { SyntheticEvent, useState } from "react";
-import { CalculatorTextField } from "./CalculatorTextField";
+import { CalculatorTextField } from "../../components/CalculatorTextField";
 
 interface CreateDishFormFoodRowInterface { 
     foods: FoodInterface[],

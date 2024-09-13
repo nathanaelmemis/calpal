@@ -1,21 +1,21 @@
-import { FormControl, Grid, InputLabel, MenuItem, Select } from "@mui/material";
+import { FormControl, Grid, InputLabel, MenuItem, Select, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/Header";
-import { DishInterface, FoodInterface } from "../Interface";
+import Header from "../../components/Header";
+import CreateFoodForm from "./CreateFoodForm";
+import { FoodInterface } from "../../Interface";
+import CreateDishForm from "./CreateDishForm";
 import axios from "axios";
-import EditFoodForm from "../components/EditFoodForm";
-import EditDishForm from "../components/EditDishForm";
 
 interface CreateFoodInterface {
     userName: string,
     isDataPresent: boolean,
-    getAndHandleUserData: () => void,
+    getAndHandleUserData: Function,
     foods: FoodInterface[],
-    dishes: DishInterface[]
 }
 
-function EditFoodDish(props: CreateFoodInterface) {
+function CreateFoodDish({ userName, isDataPresent, getAndHandleUserData, foods }: CreateFoodInterface) {
+    const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate()
 
     const [category, setCategory] = useState('Food')
@@ -41,14 +41,14 @@ function EditFoodDish(props: CreateFoodInterface) {
 
     // Get user data
     useEffect(() => {
-        if (!props.isDataPresent) {
+        if (!isDataPresent) {
             navigate('/dashboard')
         }
     })
 
     return (
         <>
-            <Header userName={props.userName}/>
+            <Header userName={userName}/>
             
             <Grid
                 container
@@ -81,6 +81,10 @@ function EditFoodDish(props: CreateFoodInterface) {
                             value={category}
                             label="Category"
                             onChange={(e) => setCategory(e.target.value)}
+                            size={isMobile ? 'small' : 'medium'}
+                            sx={(theme) => ({
+                                fontSize: isMobile ? theme.typography.body2.fontSize : theme.typography.body1.fontSize
+                            })}
                         >
                             <MenuItem value={'Food'}>Food</MenuItem>
                             <MenuItem value={'Dish'}>Dish</MenuItem>
@@ -90,14 +94,12 @@ function EditFoodDish(props: CreateFoodInterface) {
 
                 {
                     category === 'Food' ? 
-                        <EditFoodForm
-                            getAndHandleUserData={props.getAndHandleUserData}
-                            foods={props.foods}
+                        <CreateFoodForm
+                            getAndHandleUserData={getAndHandleUserData}   
                         /> : 
-                        <EditDishForm
-                            getAndHandleUserData={props.getAndHandleUserData}
-                            foods={props.foods}
-                            dishes={props.dishes}
+                        <CreateDishForm 
+                            foods={foods}
+                            getAndHandleUserData={getAndHandleUserData}
                         />
                 }
             </Grid>
@@ -105,4 +107,4 @@ function EditFoodDish(props: CreateFoodInterface) {
     )
 }
 
-export default EditFoodDish;
+export default CreateFoodDish;

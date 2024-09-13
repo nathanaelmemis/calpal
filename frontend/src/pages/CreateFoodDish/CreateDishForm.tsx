@@ -1,12 +1,12 @@
 import { Button, Grid, IconButton, TextField, useMediaQuery, useTheme } from "@mui/material";
 import { AddCircle as AddCircleIcon, RemoveCircle as RemoveCircleIcon} from '@mui/icons-material';
-import { DishDataInterface, FoodInterface } from "../Interface";
+import { DishDataInterface, FoodInterface } from "../../Interface";
 import { useEffect, useState } from "react";
 import CreateDishFormFoodRowTextField from "./CreateDishFormFoodRowTextField";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import CreateFoodButtons from "./CreateFoodButtons";
-import { CalculatorTextField } from "./CalculatorTextField";
+import { CalculatorTextField } from "../../components/CalculatorTextField";
 
 interface CreateDishFormInterface {
     foods: FoodInterface[],

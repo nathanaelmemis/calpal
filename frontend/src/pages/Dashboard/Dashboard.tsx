@@ -13,8 +13,8 @@ import { Gauge, gaugeClasses } from "@mui/x-charts";
 
 import { Add as AddIcon } from "@mui/icons-material";
 
-import { MacrosCard } from "../components/MacrosCard";
-import Header from "../components/Header";
+import { MacrosCard } from "../../components/MacrosCard";
+import Header from "../../components/Header";
 
 import { 
     DetailedDishEatenInterface, 
@@ -23,8 +23,8 @@ import {
     MealsFoodEatenInterface, 
     TotalMacrosInterface, 
     UserDataInterface 
-} from "../Interface";
-import { NavigateButtonCard } from "../components/NavigateButtonCard";
+} from "../../Interface";
+import { NavigateButtonCard } from "../../components/NavigateButtonCard";
 
 interface DashboardInterface {
     isDataPresent: boolean,

@@ -1,11 +1,11 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import Header from "../components/Header";
+import Header from "../../components/Header";
 import { useNavigate } from "react-router-dom";
-import { DishEatenInterface, DishFoodInterface, DishInterface, FoodEatenInterface, FoodInterface } from "../Interface";
+import { DishEatenInterface, DishFoodInterface, DishInterface, FoodEatenInterface, FoodInterface } from "../../Interface";
 import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
-import { CalculatorTextField } from "../components/CalculatorTextField";
+import { CalculatorTextField } from "../../components/CalculatorTextField";
 
 interface EditFoodDishEatenProps {
     userName: string,
