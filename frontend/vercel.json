@@ -1,0 +1,6 @@
+{
+    "rewrites":  [
+        {"source": "/api/:route*", "destination": "https://calpalapi.vercel.app/:route*" },
+        {"source": "/(.*)", "destination": "/"}
+    ]
+}
