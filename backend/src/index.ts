@@ -69,3 +69,5 @@ async function mongoDBTestConnect() {
     }
 }
 mongoDBTestConnect().catch(console.dir);
+
+module.exports = app;
