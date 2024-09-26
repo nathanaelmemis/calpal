@@ -1,10 +1,10 @@
 import { client } from "../database"
-const utils = require("../utils.ts")
 const jwt = require("jsonwebtoken")
 import CryptoJS from "crypto-js"
 import dotenv from "dotenv"
 
 import {Request, Response} from 'express'
+import { routeLog } from "../utils"
 
 dotenv.config()
 
@@ -47,11 +47,11 @@ export async function register (req: Request, res: Response) {
             throw new Error('Failed to register account.')
         }
 
-        utils.routeLog(req, `Account registered: ${data.email}`)
+        routeLog(req, `Account registered: ${data.email}`)
 
         res.status(200).send("Account registered.")
-    } catch(error) {
-        utils.routeLog(req, error)
+    } catch(error: any) {
+        routeLog(req, error.message)
         res.status(500).send(error)
     } finally {
         await client.close()

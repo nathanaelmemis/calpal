@@ -12,15 +12,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateDish = updateDish;
 const mongodb_1 = require("mongodb");
 const database_1 = require("../database");
-const utils = require("../utils.ts");
 const assert = require('assert');
+const utils_1 = require("../utils");
 function updateDish(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             yield database_1.client.connect();
-            // // FIXME: DISABLED
-            // res.sendStatus(501)
-            // return
             const data = req.body;
             const userID = data.userID;
             const dishID = data.dishID;
@@ -32,16 +29,16 @@ function updateDish(req, res) {
                 defaultServing: 0,
                 foods: [0] // only accepts array of defaultServing because user shouldn't be able to update foodID
             };
-            if (!utils.validateData(req, res, data, schema)) {
+            if (!(0, utils_1.validateData)(req, res, data, schema)) {
                 return;
             }
-            utils.routeLog(req, `Updating Dish: ${userID} ${dishID}`);
+            (0, utils_1.routeLog)(req, `Updating Dish: ${userID} ${dishID}`);
             // Retrieve food & dish data
             const duplicateFood = yield database_1.client.db("CalPal").collection("foods").find({ userID: userID, name: data.name }).toArray();
             const duplicateDish = yield database_1.client.db("CalPal").collection("dish").find({ userID: userID, name: data.name }).toArray();
             // Check if dish in foods or dish already exists
             if (duplicateFood.length > 0 || duplicateDish.length > 0) {
-                utils.routeLog(req, "Dish already exists.");
+                (0, utils_1.routeLog)(req, "Dish already exists.");
                 res.status(400).send("Dish already exists.");
                 return;
             }
@@ -89,11 +86,11 @@ function updateDish(req, res) {
             if (!result.modifiedCount) {
                 throw new Error(`Failed To Update Dish: ${userID} ${dishID}`);
             }
-            utils.routeLog(req, `Dish Updated: ${userID} ${dishID}`);
+            (0, utils_1.routeLog)(req, `Dish Updated: ${userID} ${dishID}`);
             res.status(200).send('Dish updated.');
         }
         catch (error) {
-            utils.routeLog(req, error.message);
+            (0, utils_1.routeLog)(req, error.message);
             res.status(500).send(error);
         }
         finally {

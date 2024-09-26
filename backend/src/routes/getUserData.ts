@@ -99,7 +99,7 @@ export async function getUserData(req: CustomRequest, res: Response) {
 
         res.status(200).send(retrievedCollections)
     } catch (error: any) {
-        routeLog(req, error)
+        routeLog(req, error.message)
         res.status(500).send(error)
     } finally {
         await client.close()

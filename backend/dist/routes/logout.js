@@ -10,10 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.logout = logout;
-const utils = require("../utils.ts");
+const utils_1 = require("../utils");
 function logout(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        utils.routeLog(req, 'A User Logged Out.');
+        (0, utils_1.routeLog)(req, 'A User Logged Out.');
         res.clearCookie("userToken");
         res.status(200).send("User Logged Out.");
     });

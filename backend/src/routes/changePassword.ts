@@ -1,5 +1,5 @@
 import { client } from "../database"
-const utils = require("../utils.ts")
+import { routeLog, validateData } from '../utils'
 const jwt = require("jsonwebtoken")
 import CryptoJS from "crypto-js"
 import dotenv from "dotenv"
@@ -21,18 +21,18 @@ export async function changePassword (req: Request, res: Response) {
             hash: "",
             newHash: ""
         }
-        if (!utils.validateData(req, res, data, schema)) {
+        if (!validateData(req, res, data, schema)) {
             return
         }
 
-        utils.routeLog(req, `Changing Password: ${data.userID}`)
+        routeLog(req, `Changing Password: ${data.userID}`)
 
         const signedHash = CryptoJS.SHA256(data.hash + process.env.SECRET_KEY).toString(CryptoJS.enc.Hex)
 
         const user = await client.db("CalPal").collection("users").findOne({ email: data.email, hash: signedHash })
 
         if (!user) {
-            utils.routeLog(req, `Invalid Credentials: ${data.email} ${signedHash}`)
+            routeLog(req, `Invalid Credentials: ${data.email} ${signedHash}`)
             res.status(400).send("Invalid Credentials.")
             return
         }
@@ -49,16 +49,16 @@ export async function changePassword (req: Request, res: Response) {
         })
 
         if (!result.matchedCount) {
-            utils.routeLog(req, `Failed to change password: ${data.userID}`)
+            routeLog(req, `Failed to change password: ${data.userID}`)
             res.status(400).send("Failed to change password.")
             return
         }
 
-        utils.routeLog(req, `Password Changed: ${data.userID}`)
+        routeLog(req, `Password Changed: ${data.userID}`)
         res.clearCookie("userToken")
         res.status(200).send("Password Changed.")
-    } catch(error) {
-        utils.routeLog(req, error)
+    } catch(error: any) {
+        routeLog(req, error.message)
         res.status(500).send(error)
     } finally {
         await client.close()

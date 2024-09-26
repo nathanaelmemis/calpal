@@ -12,8 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateDishEaten = updateDishEaten;
 const mongodb_1 = require("mongodb");
 const database_1 = require("../database");
-const utils = require("../utils.ts");
-const assert = require('assert');
+const utils_1 = require("../utils");
 function updateDishEaten(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -32,10 +31,10 @@ function updateDishEaten(req, res) {
                 mealType: "",
                 foodServing: [0]
             };
-            if (!utils.validateData(req, res, data, schema)) {
+            if (!(0, utils_1.validateData)(req, res, data, schema)) {
                 return;
             }
-            utils.routeLog(req, `Updating Dish Eaten: ${userID} ${dishEatenID}`);
+            (0, utils_1.routeLog)(req, `Updating Dish Eaten: ${userID} ${dishEatenID}`);
             // Remove data that doesn't need to be updated
             delete data.dishEatenID;
             delete data.userID;
@@ -57,11 +56,11 @@ function updateDishEaten(req, res) {
             if (!result.matchedCount) {
                 throw new Error("Failed to update dish eaten.");
             }
-            utils.routeLog(req, `Dish Eaten Updated: ${userID} ${dishEatenID}`);
+            (0, utils_1.routeLog)(req, `Dish Eaten Updated: ${userID} ${dishEatenID}`);
             res.status(200).send('Dish Eaten updated.');
         }
         catch (error) {
-            utils.routeLog(req, error.message);
+            (0, utils_1.routeLog)(req, error.message);
             res.status(500).send(error);
         }
         finally {

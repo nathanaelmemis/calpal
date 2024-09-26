@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 import dotenv from 'dotenv'
-const utils = require("../utils.ts")
+import { routeLog } from "../utils";
 
 dotenv.config();
 
@@ -18,7 +18,7 @@ export function cookieJwtAuth(req: Request, res: Response, next: NextFunction) {
         req.body.userID = decoded.userID;
         next();
     } catch(error: any) {
-        utils.routeLog(req, error.message);
+        routeLog(req, error.message);
         res.clearCookie("userToken");
         res.status(401).send("Unauthorized.");
     }

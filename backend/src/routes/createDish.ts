@@ -1,5 +1,5 @@
 import { client } from "../database"
-const utils = require("../utils.ts")
+import { routeLog, validateData } from '../utils'
 const assert = require('assert');
 
 import {Request, Response} from 'express'
@@ -23,11 +23,11 @@ export async function createDish(req: Request, res: Response) {
                 },
             ]
         }
-        if (!utils.validateData(req, res, data, schema)) {
+        if (!validateData(req, res, data, schema)) {
             return
         }
 
-        utils.routeLog(req, `Creating Dish: ${userID} ${data.name}`)
+        routeLog(req, `Creating Dish: ${userID} ${data.name}`)
 
         // Retrieve food & dish data
         const duplicateFood = await client.db("CalPal").collection("foods").find({ userID: userID, name: data.name}).toArray()
@@ -35,7 +35,7 @@ export async function createDish(req: Request, res: Response) {
 
         // Check if dish in foods or dish already exists
         if (duplicateFood.length > 0 || duplicateDish.length > 0) {
-            utils.routeLog(req, "Dish already exists.")
+            routeLog(req, "Dish already exists.")
             res.status(400).send("Dish already exists.")
             return
         }
@@ -48,11 +48,11 @@ export async function createDish(req: Request, res: Response) {
             throw new Error("Failed to create dish.")
         }
 
-        utils.routeLog(req, `Dish Created: ${req.body.userID} ${result.insertedId}`)
+        routeLog(req, `Dish Created: ${req.body.userID} ${result.insertedId}`)
 
         res.status(200).send(result.insertedId)
     } catch (error: any) {
-        utils.routeLog(req, error.message)
+        routeLog(req, error.message)
         res.status(500).send(error)
     } finally {
         await client.close()

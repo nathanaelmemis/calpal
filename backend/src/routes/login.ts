@@ -1,10 +1,10 @@
 import { client } from "../database"
-const utils = require("../utils.ts")
 const jwt = require("jsonwebtoken")
 import CryptoJS from "crypto-js"
 import dotenv from "dotenv"
 
 import {Request, Response} from 'express'
+import { validateData, routeLog } from "../utils"
 
 dotenv.config()
 
@@ -19,7 +19,7 @@ export async function login (req: Request, res: Response) {
             email: "",
             hash: ""
         }
-        if (!utils.validateData(req, res, data, schema)) {
+        if (!validateData(req, res, data, schema)) {
             return
         }
 
@@ -28,18 +28,18 @@ export async function login (req: Request, res: Response) {
         const user = await client.db("CalPal").collection("users").findOne({ email: data.email, hash: signedHash })
 
         if (!user) {
-            utils.routeLog(req, `Invalid Credentials: ${data.email} ${signedHash}`)
+            routeLog(req, `Invalid Credentials: ${data.email} ${signedHash}`)
             res.status(404).send("Invalid Credentials.")
             return
         }
 
         const userToken = jwt.sign({ userID: user._id, email: user.email }, process.env.SECRET_KEY, { expiresIn: "1h" })
 
-        utils.routeLog(req, `User Authenticated: ${user.email}`)
+        routeLog(req, `User Authenticated: ${user.email}`)
         res.cookie("userToken", userToken, { httpOnly: true })
         res.status(200).send("User Authenticated.")
-    } catch(error) {
-        utils.routeLog(req, error)
+    } catch(error: any) {
+        routeLog(req, error.message)
         res.status(500).send(error)
     } finally {
         await client.close()

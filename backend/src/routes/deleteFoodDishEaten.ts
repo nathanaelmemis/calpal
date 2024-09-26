@@ -1,7 +1,7 @@
 import {Request, Response} from 'express'
 import { client } from '../database'
 import { ObjectId } from 'mongodb'
-const utils = require("../utils.ts")
+import { validateData, routeLog } from '../utils'
 
 export async function deleteFoodDishEaten(req: Request, res: Response) {
     try {
@@ -17,11 +17,11 @@ export async function deleteFoodDishEaten(req: Request, res: Response) {
             foodDishEatenID: "",
             isDish: true,
         }
-        if (!utils.validateData(req, res, data, schema)) {
+        if (!validateData(req, res, data, schema)) {
             return
         }
 
-        utils.routeLog(req, `Deleting Food/Dish Eaten: ${userID} ${foodDishEatenID}`)
+        routeLog(req, `Deleting Food/Dish Eaten: ${userID} ${foodDishEatenID}`)
 
         let result = null
         if (data.isDish) {
@@ -40,11 +40,11 @@ export async function deleteFoodDishEaten(req: Request, res: Response) {
             throw new Error(`Failed To Delete Food/Dish Eaten: ${userID} ${foodDishEatenID}`)
         }
         
-        utils.routeLog(req, `Food/Dish Eaten deleted: ${userID} ${foodDishEatenID}`)
+        routeLog(req, `Food/Dish Eaten deleted: ${userID} ${foodDishEatenID}`)
 
         res.status(200).send(result.deletedCount)
     } catch (error: any) {
-        utils.routeLog(req, error.message)
+        routeLog(req, error.message)
         res.status(500).send(error)
     } finally {
         await client.close()

@@ -68,7 +68,7 @@ function getUserData(req, res) {
             res.status(200).send(retrievedCollections);
         }
         catch (error) {
-            (0, utils_1.routeLog)(req, error);
+            (0, utils_1.routeLog)(req, error.message);
             res.status(500).send(error);
         }
         finally {

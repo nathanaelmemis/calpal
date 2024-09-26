@@ -14,10 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.login = login;
 const database_1 = require("../database");
-const utils = require("../utils.ts");
 const jwt = require("jsonwebtoken");
 const crypto_js_1 = __importDefault(require("crypto-js"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const utils_1 = require("../utils");
 dotenv_1.default.config();
 function login(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -29,23 +29,23 @@ function login(req, res) {
                 email: "",
                 hash: ""
             };
-            if (!utils.validateData(req, res, data, schema)) {
+            if (!(0, utils_1.validateData)(req, res, data, schema)) {
                 return;
             }
             const signedHash = crypto_js_1.default.SHA256(data.hash + process.env.SECRET_KEY).toString(crypto_js_1.default.enc.Hex);
             const user = yield database_1.client.db("CalPal").collection("users").findOne({ email: data.email, hash: signedHash });
             if (!user) {
-                utils.routeLog(req, `Invalid Credentials: ${data.email} ${signedHash}`);
+                (0, utils_1.routeLog)(req, `Invalid Credentials: ${data.email} ${signedHash}`);
                 res.status(404).send("Invalid Credentials.");
                 return;
             }
             const userToken = jwt.sign({ userID: user._id, email: user.email }, process.env.SECRET_KEY, { expiresIn: "1h" });
-            utils.routeLog(req, `User Authenticated: ${user.email}`);
+            (0, utils_1.routeLog)(req, `User Authenticated: ${user.email}`);
             res.cookie("userToken", userToken, { httpOnly: true });
             res.status(200).send("User Authenticated.");
         }
         catch (error) {
-            utils.routeLog(req, error);
+            (0, utils_1.routeLog)(req, error.message);
             res.status(500).send(error);
         }
         finally {

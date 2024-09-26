@@ -1,18 +1,14 @@
 import { ObjectId } from "mongodb";
 import { client } from "../database"
-const utils = require("../utils.ts")
 const assert = require('assert');
 
 import {Request, Response} from 'express'
 import { DishFood } from "../interfaces/dishFood";
+import { validateData, routeLog } from "../utils";
 
 export async function updateDish(req: Request, res: Response) {
     try {
         await client.connect()
-
-        // // FIXME: DISABLED
-        // res.sendStatus(501)
-        // return
 
         const data = req.body
         const userID = data.userID
@@ -26,11 +22,11 @@ export async function updateDish(req: Request, res: Response) {
             defaultServing: 0,
             foods: [0] // only accepts array of defaultServing because user shouldn't be able to update foodID
         }
-        if (!utils.validateData(req, res, data, schema)) {
+        if (!validateData(req, res, data, schema)) {
             return
         }
 
-        utils.routeLog(req, `Updating Dish: ${userID} ${dishID}`)
+        routeLog(req, `Updating Dish: ${userID} ${dishID}`)
 
         // Retrieve food & dish data
         const duplicateFood = await client.db("CalPal").collection("foods").find({ userID: userID, name: data.name}).toArray()
@@ -38,7 +34,7 @@ export async function updateDish(req: Request, res: Response) {
 
         // Check if dish in foods or dish already exists
         if (duplicateFood.length > 0 || duplicateDish.length > 0) {
-            utils.routeLog(req, "Dish already exists.")
+            routeLog(req, "Dish already exists.")
             res.status(400).send("Dish already exists.")
             return
         }
@@ -91,11 +87,11 @@ export async function updateDish(req: Request, res: Response) {
             throw new Error(`Failed To Update Dish: ${userID} ${dishID}`)
         }
 
-        utils.routeLog(req, `Dish Updated: ${userID} ${dishID}`)
+        routeLog(req, `Dish Updated: ${userID} ${dishID}`)
 
         res.status(200).send('Dish updated.')
     } catch (error: any) {
-        utils.routeLog(req, error.message)
+        routeLog(req, error.message)
         res.status(500).send(error)
     } finally {
         await client.close()

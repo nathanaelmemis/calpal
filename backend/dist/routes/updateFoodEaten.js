@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateFoodEaten = updateFoodEaten;
 const database_1 = require("../database");
 const mongodb_1 = require("mongodb");
-const utils = require("../utils.ts");
+const utils_1 = require("../utils");
 function updateFoodEaten(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -30,10 +30,10 @@ function updateFoodEaten(req, res) {
                 grams: 0,
                 quantity: 0,
             };
-            if (!utils.validateData(req, res, data, schema)) {
+            if (!(0, utils_1.validateData)(req, res, data, schema)) {
                 return;
             }
-            utils.routeLog(req, `Updating Food Eaten: ${userID} ${foodEatenID}`);
+            (0, utils_1.routeLog)(req, `Updating Food Eaten: ${userID} ${foodEatenID}`);
             // Remove data that doesn't need to be updated
             delete data.foodEatenID;
             delete data.userID;
@@ -54,11 +54,11 @@ function updateFoodEaten(req, res) {
             if (!result.matchedCount) {
                 throw new Error("Failed to update food eaten.");
             }
-            utils.routeLog(req, `Food Eaten Updated: ${userID} ${foodEatenID}`);
+            (0, utils_1.routeLog)(req, `Food Eaten Updated: ${userID} ${foodEatenID}`);
             res.status(200).send(`Food Eaten Updated`);
         }
         catch (error) {
-            utils.routeLog(req, error.message);
+            (0, utils_1.routeLog)(req, error.message);
             res.status(500).send(error);
         }
         finally {

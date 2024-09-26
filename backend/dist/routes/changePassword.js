@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.changePassword = changePassword;
 const database_1 = require("../database");
-const utils = require("../utils.ts");
+const utils_1 = require("../utils");
 const jwt = require("jsonwebtoken");
 const crypto_js_1 = __importDefault(require("crypto-js"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -31,14 +31,14 @@ function changePassword(req, res) {
                 hash: "",
                 newHash: ""
             };
-            if (!utils.validateData(req, res, data, schema)) {
+            if (!(0, utils_1.validateData)(req, res, data, schema)) {
                 return;
             }
-            utils.routeLog(req, `Changing Password: ${data.userID}`);
+            (0, utils_1.routeLog)(req, `Changing Password: ${data.userID}`);
             const signedHash = crypto_js_1.default.SHA256(data.hash + process.env.SECRET_KEY).toString(crypto_js_1.default.enc.Hex);
             const user = yield database_1.client.db("CalPal").collection("users").findOne({ email: data.email, hash: signedHash });
             if (!user) {
-                utils.routeLog(req, `Invalid Credentials: ${data.email} ${signedHash}`);
+                (0, utils_1.routeLog)(req, `Invalid Credentials: ${data.email} ${signedHash}`);
                 res.status(400).send("Invalid Credentials.");
                 return;
             }
@@ -52,16 +52,16 @@ function changePassword(req, res) {
                 }
             });
             if (!result.matchedCount) {
-                utils.routeLog(req, `Failed to change password: ${data.userID}`);
+                (0, utils_1.routeLog)(req, `Failed to change password: ${data.userID}`);
                 res.status(400).send("Failed to change password.");
                 return;
             }
-            utils.routeLog(req, `Password Changed: ${data.userID}`);
+            (0, utils_1.routeLog)(req, `Password Changed: ${data.userID}`);
             res.clearCookie("userToken");
             res.status(200).send("Password Changed.");
         }
         catch (error) {
-            utils.routeLog(req, error);
+            (0, utils_1.routeLog)(req, error.message);
             res.status(500).send(error);
         }
         finally {

@@ -11,8 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateUserData = updateUserData;
 const database_1 = require("../database");
-const utils = require("../utils.ts");
-const assert = require('assert');
+const utils_1 = require("../utils");
 function updateUserData(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -32,10 +31,10 @@ function updateUserData(req, res) {
                 snacksCaloriesLimit: 0,
                 dinnerCaloriesLimit: 0,
             };
-            if (!utils.validateData(req, res, data, schema)) {
+            if (!(0, utils_1.validateData)(req, res, data, schema)) {
                 return;
             }
-            utils.routeLog(req, `Updating User Data: ${userID}`);
+            (0, utils_1.routeLog)(req, `Updating User Data: ${userID}`);
             // Remove data that doesn't need to be updated
             delete data.userID;
             Object.keys(data).forEach((key) => {
@@ -53,11 +52,11 @@ function updateUserData(req, res) {
             });
             // Update user data
             yield database_1.client.db("CalPal").collection("userData").updateOne({ userID: userID }, { $set: data });
-            utils.routeLog(req, `User Data Updated: ${userID}`);
+            (0, utils_1.routeLog)(req, `User Data Updated: ${userID}`);
             res.status(200).send('User data updated.');
         }
         catch (error) {
-            utils.routeLog(req, error.message);
+            (0, utils_1.routeLog)(req, error.message);
             res.status(500).send(error);
         }
         finally {

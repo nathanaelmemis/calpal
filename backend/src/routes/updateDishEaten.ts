@@ -1,9 +1,8 @@
 import { ObjectId } from "mongodb";
 import { client } from "../database"
-const utils = require("../utils.ts")
-const assert = require('assert');
 
 import {Request, Response} from 'express'
+import { validateData, routeLog } from "../utils";
 
 export async function updateDishEaten(req: Request, res: Response) {
     try {
@@ -24,11 +23,11 @@ export async function updateDishEaten(req: Request, res: Response) {
             mealType: "",
             foodServing: [0]
         }
-        if (!utils.validateData(req, res, data, schema)) {
+        if (!validateData(req, res, data, schema)) {
             return
         }
 
-        utils.routeLog(req, `Updating Dish Eaten: ${userID} ${dishEatenID}`)
+        routeLog(req, `Updating Dish Eaten: ${userID} ${dishEatenID}`)
 
         // Remove data that doesn't need to be updated
         delete data.dishEatenID
@@ -53,11 +52,11 @@ export async function updateDishEaten(req: Request, res: Response) {
             throw new Error("Failed to update dish eaten.")
         }
 
-        utils.routeLog(req, `Dish Eaten Updated: ${userID} ${dishEatenID}`)
+        routeLog(req, `Dish Eaten Updated: ${userID} ${dishEatenID}`)
 
         res.status(200).send('Dish Eaten updated.')
     } catch (error: any) {
-        utils.routeLog(req, error.message)
+        routeLog(req, error.message)
         res.status(500).send(error)
     } finally {
         await client.close()

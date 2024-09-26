@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteFoodDishEaten = deleteFoodDishEaten;
 const database_1 = require("../database");
 const mongodb_1 = require("mongodb");
-const utils = require("../utils.ts");
+const utils_1 = require("../utils");
 function deleteFoodDishEaten(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -26,10 +26,10 @@ function deleteFoodDishEaten(req, res) {
                 foodDishEatenID: "",
                 isDish: true,
             };
-            if (!utils.validateData(req, res, data, schema)) {
+            if (!(0, utils_1.validateData)(req, res, data, schema)) {
                 return;
             }
-            utils.routeLog(req, `Deleting Food/Dish Eaten: ${userID} ${foodDishEatenID}`);
+            (0, utils_1.routeLog)(req, `Deleting Food/Dish Eaten: ${userID} ${foodDishEatenID}`);
             let result = null;
             if (data.isDish) {
                 result = yield database_1.client.db("CalPal").collection("dishEaten").deleteOne({
@@ -46,11 +46,11 @@ function deleteFoodDishEaten(req, res) {
             if (!result.deletedCount) {
                 throw new Error(`Failed To Delete Food/Dish Eaten: ${userID} ${foodDishEatenID}`);
             }
-            utils.routeLog(req, `Food/Dish Eaten deleted: ${userID} ${foodDishEatenID}`);
+            (0, utils_1.routeLog)(req, `Food/Dish Eaten deleted: ${userID} ${foodDishEatenID}`);
             res.status(200).send(result.deletedCount);
         }
         catch (error) {
-            utils.routeLog(req, error.message);
+            (0, utils_1.routeLog)(req, error.message);
             res.status(500).send(error);
         }
         finally {

@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.cookieJwtAuth = cookieJwtAuth;
 const jwt = require("jsonwebtoken");
 const dotenv_1 = __importDefault(require("dotenv"));
-const utils = require("../utils.ts");
+const utils_1 = require("../utils");
 dotenv_1.default.config();
 function cookieJwtAuth(req, res, next) {
     try {
@@ -19,7 +19,7 @@ function cookieJwtAuth(req, res, next) {
         next();
     }
     catch (error) {
-        utils.routeLog(req, error.message);
+        (0, utils_1.routeLog)(req, error.message);
         res.clearCookie("userToken");
         res.status(401).send("Unauthorized.");
     }

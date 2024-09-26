@@ -14,10 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.register = register;
 const database_1 = require("../database");
-const utils = require("../utils.ts");
 const jwt = require("jsonwebtoken");
 const crypto_js_1 = __importDefault(require("crypto-js"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const utils_1 = require("../utils");
 dotenv_1.default.config();
 function register(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -50,11 +50,11 @@ function register(req, res) {
             if (!userDataResult.insertedId) {
                 throw new Error('Failed to register account.');
             }
-            utils.routeLog(req, `Account registered: ${data.email}`);
+            (0, utils_1.routeLog)(req, `Account registered: ${data.email}`);
             res.status(200).send("Account registered.");
         }
         catch (error) {
-            utils.routeLog(req, error);
+            (0, utils_1.routeLog)(req, error.message);
             res.status(500).send(error);
         }
         finally {

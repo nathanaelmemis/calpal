@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createFood = createFood;
 const database_1 = require("../database");
-const utils = require("../utils.ts");
+const utils_1 = require("../utils");
 const assert = require('assert');
 function createFood(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -29,16 +29,16 @@ function createFood(req, res) {
                 carbs: 0,
                 fats: 0
             };
-            if (!utils.validateData(req, res, data, schema)) {
+            if (!(0, utils_1.validateData)(req, res, data, schema)) {
                 return;
             }
-            utils.routeLog(req, `Creating Food: ${userID} ${data.name}`);
+            (0, utils_1.routeLog)(req, `Creating Food: ${userID} ${data.name}`);
             // Retrieve food & dish data
             const duplicateFood = yield database_1.client.db("CalPal").collection("foods").find({ userID: userID, name: data.name }).toArray();
             const duplicateDish = yield database_1.client.db("CalPal").collection("dish").find({ userID: userID, name: data.name }).toArray();
             // Check if dish in foods or dish already exists
             if (duplicateFood.length > 0 || duplicateDish.length > 0) {
-                utils.routeLog(req, "Food already exists.");
+                (0, utils_1.routeLog)(req, "Food already exists.");
                 res.status(400).send("Food already exists.");
                 return;
             }
@@ -48,11 +48,11 @@ function createFood(req, res) {
             if (!result.insertedId) {
                 throw new Error("Failed to create food.");
             }
-            utils.routeLog(req, `Food Created: ${req.body.userID} ${result.insertedId}`);
+            (0, utils_1.routeLog)(req, `Food Created: ${req.body.userID} ${result.insertedId}`);
             res.status(200).send(result.insertedId);
         }
         catch (error) {
-            utils.routeLog(req, error.message);
+            (0, utils_1.routeLog)(req, error.message);
             res.status(500).send(error);
         }
         finally {

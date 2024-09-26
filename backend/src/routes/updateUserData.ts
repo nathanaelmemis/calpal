@@ -1,8 +1,7 @@
 import { client } from "../database"
-const utils = require("../utils.ts")
-const assert = require('assert');
 
 import {Request, Response} from 'express'
+import { validateData, routeLog } from "../utils"
 
 export async function updateUserData(req: Request, res: Response) {
     try {
@@ -24,11 +23,11 @@ export async function updateUserData(req: Request, res: Response) {
             snacksCaloriesLimit: 0,
             dinnerCaloriesLimit: 0,
         }
-        if (!utils.validateData(req, res, data, schema)) {
+        if (!validateData(req, res, data, schema)) {
             return
         }
 
-        utils.routeLog(req, `Updating User Data: ${userID}`)
+        routeLog(req, `Updating User Data: ${userID}`)
 
         // Remove data that doesn't need to be updated
         delete data.userID
@@ -48,11 +47,11 @@ export async function updateUserData(req: Request, res: Response) {
         // Update user data
         await client.db("CalPal").collection("userData").updateOne({ userID: userID }, { $set: data })
 
-        utils.routeLog(req, `User Data Updated: ${userID}`)
+        routeLog(req, `User Data Updated: ${userID}`)
 
         res.status(200).send('User data updated.')
     } catch (error: any) {
-        utils.routeLog(req, error.message)
+        routeLog(req, error.message)
         res.status(500).send(error)
     } finally {
         await client.close()
