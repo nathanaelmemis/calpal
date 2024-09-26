@@ -1,60 +1,68 @@
-import { Autocomplete, Grid, TextField } from "@mui/material";
-import { DishDataInterface, DishFoodInterface, FoodInterface } from "../../Interface";
-import { SyntheticEvent, useState } from "react";
+import { Grid, TextField, useMediaQuery, useTheme } from "@mui/material";
+import { Dispatch, SetStateAction, useContext } from "react";
 import { CalculatorTextField } from "../../components/CalculatorTextField";
+import { DishFood } from "../../interfaces/dishFood";
+import { Food } from "../../interfaces/food";
+import { UserDataContext } from "../../context/UserDataContext";
 
-interface EditDishFormFoodRowInterface { 
-    foods: FoodInterface[],
-    foodInitialValue: string,
+interface EditDishFormFoodRow { 
+    foodID: string
     defaultServingInitialValue: number,
     index: number,
-    dishData: DishFoodInterface[],
-    setDishData: Function
+    setDishData: Dispatch<SetStateAction<DishFood[]>>
 }
 
-function EditDishFormFoodRowTextField(props: EditDishFormFoodRowInterface) {
-    const [autocompleteInputValue, setAutocompleteInputValue] = useState(props.foodInitialValue)
-    const [selectedFood, setSelectedFood] = useState(props.foodInitialValue)
+function EditDishFormFoodRowTextField({ foodID, defaultServingInitialValue, index, setDishData}: EditDishFormFoodRow) {
+    const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
+    const {
+        foods
+    } = useContext(UserDataContext)
 
-    function HandleOnChangeAutocomplete(_event: SyntheticEvent<Element, Event>, value: string | null) {
-        setSelectedFood(value || '')
+    const food = foods.find((food: Food) => food._id === foodID)
 
-        const dishDataTemp = [...props.dishData]
-        dishDataTemp[props.index].food = value || ''
-
-        props.setDishData(dishDataTemp)
+    if (!food) {
+        console.error(`Food not found: ${foodID}`)
     }
-    
+
     return (
         <>
             <Grid
                 item
-                xs={7.47}
+                sm={8}
+                xs={7}
             >
-                <Autocomplete
-                    disablePortal
-                    id="combo-box-demo"
-                    options={props.foods.map((option: FoodInterface) => option.name)}
-                    fullWidth   
-                    renderInput={(params) => <TextField {...params} label="Food" color="secondary"/>}
-                    value={selectedFood}
-                    onChange={HandleOnChangeAutocomplete}
-                    inputValue={autocompleteInputValue}
-                    onInputChange={(_event, newInputValue) => {setAutocompleteInputValue(newInputValue)}}
-                    isOptionEqualToValue={(options, value) => options.valueOf === value.valueOf}
+                <TextField 
+                    fullWidth
+                    value={food?.name || ''}
+                    size={isMobile ? 'small' : 'medium'}
+                    sx={(theme) => ({
+                        pointerEvents: 'none',
+                        '& .MuiOutlinedInput-root': {
+                            '& fieldset': {
+                                borderColor: 'rgba(0, 0, 0, 0.12)',
+                            }
+                        },
+                        '& input': {
+                            fontSize: {
+                                sm: theme.typography.body1.fontSize,
+                                xs: theme.typography.body2.fontSize
+                            }
+                        }
+                    })}
                 />
             </Grid>
             <Grid
                 item
-                xs={4.28}
+                sm={4}
+                xs={5}
             >
                 <CalculatorTextField
-                    label="Serving (g)"
-                    initialValue={props.defaultServingInitialValue}
+                    label="Serving (g/ratio)"
+                    initialValue={defaultServingInitialValue}
                     setNumber={(newNumberValue: number) => {
-                        props.setDishData((dishData: DishDataInterface[]) => {
+                        setDishData((dishData: DishFood[]) => {
                             const dishDataTemp = [...dishData]
-                            dishDataTemp[props.index].serving = newNumberValue
+                            dishDataTemp[index].defaultServing = newNumberValue
                             return dishDataTemp
                         })
                     }}

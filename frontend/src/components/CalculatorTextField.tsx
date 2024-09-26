@@ -27,7 +27,7 @@ export function CalculatorTextField({ label, renderTrigger = 0, initialValue, se
     }, [renderTrigger])
 
     function calculateString(stringValue: string): number {
-        const stringArray = stringValue.match(/(?<!.)-\d+|\d+|\+|\-|\/|\*|[^0-9\+\-\/\\*]+/g) || []
+        const stringArray = stringValue.match(/(?<!.)-\d+(\.\d+)?|\d+(\.\d+)?|\+|\-|\/|\*|[^0-9\+\-\/\\*]+/g) || []
 
         if (stringArray.length === 0) {
             setIsError(false)
@@ -97,7 +97,6 @@ export function CalculatorTextField({ label, renderTrigger = 0, initialValue, se
     function handleChange(newStringValue: string) {
         clearTimeout(timeoutRef.current)
         const calculatedValue = calculateString(newStringValue)
-        console.log(calculatedValue)
         if (calculatedValue !== -1) {
             setNumber(calculatedValue)
             setHelperText(`= ${String(calculatedValue)}`)

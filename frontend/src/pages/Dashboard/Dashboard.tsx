@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
     Grid, 
@@ -15,37 +15,28 @@ import { Add as AddIcon } from "@mui/icons-material";
 
 import { MacrosCard } from "../../components/MacrosCard";
 import Header from "../../components/Header";
-
-import { 
-    DetailedDishEatenInterface, 
-    DetailedFoodEatenInterface, 
-    MealsDishEatenInterface, 
-    MealsFoodEatenInterface, 
-    TotalMacrosInterface, 
-    UserDataInterface 
-} from "../../Interface";
 import { NavigateButtonCard } from "../../components/NavigateButtonCard";
+import { UserDataContext } from "../../context/UserDataContext";
+import { Loading } from "../../components/Loading";
+import { checkAuth } from "../../utils/checkAuth";
+import { FoodEaten } from "../../interfaces/foodEaten";
+import { DishEaten } from "../../interfaces/dishEaten";
+import { calculateDishMacros } from "../../utils/calculateDishMacros";
 
-interface DashboardInterface {
-    isDataPresent: boolean,
-    getAndHandleUserData: Function,
-    userData: UserDataInterface,
-    setMealType: Function,
-    mealsFoodEaten: MealsFoodEatenInterface,
-    mealsDishEaten: MealsDishEatenInterface,
-    totalMacros: TotalMacrosInterface,
-}
-
-export function Dashboard({ 
-        isDataPresent, 
-        getAndHandleUserData, 
-        userData, 
-        setMealType, 
-        mealsFoodEaten, 
-        mealsDishEaten, 
-        totalMacros 
-    }: DashboardInterface) 
-{
+export function Dashboard() {
+    // Check if user is authenticated
+    if (!checkAuth()) return
+    
+    const { 
+        isFetchingData,
+        userData,
+        foods,
+        dishes,
+        foodEaten,
+        dishEaten, 
+        setMealType
+    } = useContext(UserDataContext)
+    
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
 
     const [breakfastCalories, setBreakfastCalories] = useState(0)
@@ -53,34 +44,54 @@ export function Dashboard({
     const [snacksCalories, setSnacksCalories] = useState(0)
     const [dinnerCalories, setDinnerCalories] = useState(0)
 
-    // Get user data
-    useEffect(() => {
-        if (!isDataPresent) {
-            getAndHandleUserData()
-        }
-    }, [])
-
     // Get food eaten data
     useEffect(() => {
-        function calculateMealCalories(meal: DetailedFoodEatenInterface[] | DetailedDishEatenInterface[]) {
-            return meal.reduce((acc: number, item: any) => acc + item.calories * item.grams * item.quantity, 0)
+        function calculateMealFoodCalories(meal: FoodEaten[]) {
+            return meal.reduce((acc: number, mealItem: FoodEaten) => {
+                const food = foods.find((food) => food._id === mealItem.foodID)
+
+                if (!food) {
+                    console.error('Food not found:', mealItem)
+                    return acc
+                }
+
+                return acc + food.calories * mealItem.grams * mealItem.quantity
+            }, 0)
         }
 
-        setBreakfastCalories(calculateMealCalories(mealsFoodEaten.breakfast) + calculateMealCalories(mealsDishEaten.breakfast))
-        setLunchCalories(calculateMealCalories(mealsFoodEaten.lunch) + calculateMealCalories(mealsDishEaten.lunch))
-        setSnacksCalories(calculateMealCalories(mealsFoodEaten.snacks) + calculateMealCalories(mealsDishEaten.snacks))
-        setDinnerCalories(calculateMealCalories(mealsFoodEaten.dinner) + calculateMealCalories(mealsDishEaten.dinner))
-    }, [mealsFoodEaten])
+        const calculateMealDishCalories = (meal: DishEaten[]) => {
+            return meal.reduce((acc: number, mealItem: DishEaten) => {
+                const dishMacros = calculateDishMacros(foods, dishes, mealItem.dishID, mealItem.foodServing, mealItem.grams, mealItem.quantity)
+
+                return acc + dishMacros.calories
+            }, 0)
+        }
+
+        // Group food eaten by meal type
+        const foodEatenBreakfast = foodEaten.filter((item: FoodEaten) => item.mealType === "breakfast")
+        const foodEatenLunch = foodEaten.filter((item: FoodEaten) => item.mealType === "lunch")
+        const foodEatenSnacks = foodEaten.filter((item: FoodEaten) => item.mealType === "snacks")
+        const foodEatenDinner = foodEaten.filter((item: FoodEaten) => item.mealType === "dinner")
+
+        // Group dish eaten by meal type
+        const dishEatenBreakfast = dishEaten.filter((item: DishEaten) => item.mealType === "breakfast")
+        const dishEatenLunch = dishEaten.filter((item: DishEaten) => item.mealType === "lunch")
+        const dishEatenSnacks = dishEaten.filter((item: DishEaten) => item.mealType === "snacks")
+        const dishEatenDinner = dishEaten.filter((item: DishEaten) => item.mealType === "dinner")
+
+        setBreakfastCalories(calculateMealFoodCalories(foodEatenBreakfast) + calculateMealDishCalories(dishEatenBreakfast))
+        setLunchCalories(calculateMealFoodCalories(foodEatenLunch) + calculateMealDishCalories(dishEatenLunch))
+        setSnacksCalories(calculateMealFoodCalories(foodEatenSnacks) + calculateMealDishCalories(dishEatenSnacks))
+        setDinnerCalories(calculateMealFoodCalories(foodEatenDinner) + calculateMealDishCalories(dishEatenDinner))
+    }, [foodEaten, dishEaten])
 
     return (
+        isFetchingData ? <Loading /> :
         <>
-            <Header userName={userData.name}/>
+            <Header />
             
             {/* Macro Meter Section */}
-            <MacrosCard 
-                userData={userData} 
-                totalMacros={totalMacros}
-            />
+            <MacrosCard />
 
             {/* Meals Section */}
             <Grid
@@ -123,7 +134,7 @@ export function Dashboard({
                     calories={dinnerCalories}
                     caloriesLimit={userData.dinnerCaloriesLimit}/>
             </Grid>
-
+            
             <NavigateButtonCard 
                 text="Show Food Eaten"
                 route="/showFoodEaten"
@@ -242,7 +253,7 @@ function MealGuage({ width, value, mealType, setMealType, calories, caloriesLimi
                     <IconButton 
                         size='large' 
                         color='secondary'
-                        onClick={() => {setMealType(mealType); navigate(`/addFood`)}}>
+                        onClick={() => {setMealType(mealType.toLowerCase()); navigate(`/addFood`)}}>
                         <AddIcon />
                     </IconButton>
                 </Tooltip>

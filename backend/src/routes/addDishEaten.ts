@@ -1,6 +1,6 @@
 import {Request, Response} from 'express'
 import { client } from '../database'
-const utils = require("../utils.ts")
+import { routeLog, validateData } from "../utils"
 
 export async function addDishEaten(req: Request, res: Response) {
     try {
@@ -13,17 +13,17 @@ export async function addDishEaten(req: Request, res: Response) {
         const schema = {
             userID: "",
             mealType: "",
-            dish: "",
+            dishID: "",
             date: data.date,
             grams: 0,
             quantity: 0,
             foodServing: [0]
         }
-        if (!utils.validateData(req, res, data, schema)) {
+        if (!validateData(req, res, data, schema)) {
             return
         }
 
-        utils.routeLog(req, `Adding Dish Eaten: ${req.body.userID}`)
+        routeLog(req, `Adding Dish Eaten: ${req.body.userID}`)
 
         const result = await client.db("CalPal").collection("dishEaten").insertOne(data)
 
@@ -31,11 +31,11 @@ export async function addDishEaten(req: Request, res: Response) {
             throw new Error("Failed to insert dish eaten.")
         }
         
-        utils.routeLog(req, `Dish Eaten added: ${result.insertedId}`)
+        routeLog(req, `Dish Eaten added: ${result.insertedId}`)
 
         res.status(200).send(result.insertedId)
     } catch (error: any) {
-        utils.routeLog(req, error.message)
+        routeLog(req, error.message)
         res.status(500).send(error)
     } finally {
         await client.close()

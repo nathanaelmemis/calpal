@@ -1,74 +1,114 @@
 import { Grid, useMediaQuery, useTheme } from "@mui/material";
 import axios from "axios";
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DishInterface, FoodInterface, MealsDishEatenInterface, MealsFoodEatenInterface, UserDataInterface } from "../../Interface";
 import AddFoodDishButtons from "./AddFoodDishButtons";
-import AddFoodDishCardTitle from "./AddFoodDishCardTitle";
+import { Dispatch, SetStateAction, useState, useEffect, useContext } from "react";
+import { UserDataContext } from "../../context/UserDataContext";
 import AddFoodDishTextField from "./AddFoodDishTextField";
+import AddFoodDishCardTitle from "./AddFoodDishCardTitle";
+import { FoodEaten } from "../../interfaces/foodEaten";
+import { DishEaten } from "../../interfaces/dishEaten";
+import { SelectedFoodDish } from "../../interfaces/selectedFoodDish";
+import { Macros } from "../../interfaces/macros";
 
-interface AddFoodCardInterface {
-    getAndHandleUserData: Function,
-    userData: UserDataInterface,
-    mealType: string,
-    setIsDish: Function,
-    selectedFood: string,
-    setSelectedFood: Function,
-    foods: FoodInterface[],
-    dishes: DishInterface[],
-    mealsFoodEaten: MealsFoodEatenInterface,
-    mealsDishEaten: MealsDishEatenInterface
-    setMacrosIncrease: (calories: number, protein: number, carbs: number, fats: number, grams: number, quantity: number) => void
+interface AddFoodCard {
+    setIsDish: Dispatch<SetStateAction<boolean>>,
+    selectedFoodDish: SelectedFoodDish,
+    setSelectedFoodDish: Dispatch<SetStateAction<SelectedFoodDish>>,
+    setMacrosIncrease: (macros: Macros) => void
 }
 
-export function AddFoodCard({ getAndHandleUserData, userData, mealType, setIsDish, selectedFood, setSelectedFood, foods, dishes, mealsFoodEaten, mealsDishEaten, setMacrosIncrease }: AddFoodCardInterface) {
+export function AddFoodCard({ setIsDish, selectedFoodDish, setSelectedFoodDish, setMacrosIncrease }: AddFoodCard) {
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate();
 
-    const [grams, setGrams] = useState(0)
-    const [quantity, setQuantity] = useState(1) 
+    const {
+        foods,
+        foodEaten,
+        dishEaten,
+        getData,
+        mealType
+    } = useContext(UserDataContext)
 
-    const [mealCalories, setMealCalories] = useState(0)
-    const [mealCaloriesIncrease, setMealCaloriesIncrease] = useState(0)
+    const [grams, setGrams] = useState<number>(0)
+    const [quantity, setQuantity] = useState<number>(1) 
 
-    const [isLoading, setIsLoading] = useState(false)
-    const [isError, setIsError] = useState(false)
+    const [mealCalories, setMealCalories] = useState<number>(0)
+    const [mealCaloriesIncrease, setMealCaloriesIncrease] = useState<number>(0)
 
-    const [renderTrigger, setRenderTrigger] = useState(0)
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [isError, setIsError] = useState<boolean>(false)
+
+    const [renderTrigger, setRenderTrigger] = useState<number>(0)
+
+    // Initial values
+    useEffect(() => {
+        if (selectedFoodDish.id === '') {
+            return
+        }
+
+        const food = foods.find(food => food._id === selectedFoodDish.id)
+
+        if (!food) {
+            console.error('Food not found:', selectedFoodDish)
+            return
+        }
+
+        setGrams(food.defaultServing)
+        setRenderTrigger(renderTrigger + 1)
+    }, [selectedFoodDish])
 
     // Update mealCaloriesIncrease when grams or quantity changes
     useEffect(() => {
-        const food = foods.find(food => food.name === selectedFood)
+        if (selectedFoodDish.id === '') {
+            return
+        }
 
-        setMacrosIncrease(food?.calories || 0, food?.protein || 0, food?.carbs || 0, food?.fats || 0, grams, quantity)
-        setMealCaloriesIncrease((food?.calories || 0) * grams * quantity)
+        const food = foods.find(food => food._id === selectedFoodDish.id)
+
+        if (!food) {
+            console.error('Food not found: ', selectedFoodDish)
+            return
+        }
+
+        setMacrosIncrease({
+            calories: food.calories * grams * quantity,
+            carbs: food.carbs * grams * quantity,
+            protein: food.protein * grams * quantity,
+            fats: food.fats  * grams * quantity,
+        })
+        setMealCaloriesIncrease((food.calories) * grams * quantity)
     }, [grams, quantity])
 
-    // Check if meal type is valid
+    // Update mealCalories when mealType, foodEaten, or dishEaten changes
     useEffect(() => {
         setMealCalories(
-            mealsFoodEaten[mealType.toLowerCase()].reduce((acc: number, item: any) => acc + item.calories * item.grams * item.quantity, 0)
-            + mealsDishEaten[mealType.toLowerCase()].reduce((acc: number, item: any) => acc + item.calories * item.grams * item.quantity, 0)
+            foodEaten
+                .filter((item: FoodEaten) => item.mealType === mealType)
+                .reduce((acc: number, item: any) => acc + item.calories * item.grams * item.quantity, 0)
+            + dishEaten
+                .filter((item: DishEaten) => item.mealType === mealType)
+                .reduce((acc: number, item: any) => acc + item.calories * item.grams * item.quantity, 0)
         )
-    }, [mealType])
+    }, [mealType, foodEaten, dishEaten])
 
     async function handleAddFood() {
         setIsLoading(true)
 
-        if (!selectedFood) {
+        if (!selectedFoodDish) {
             setIsLoading(false)
             setIsError(true)
             return
         }
 
         await axios.post('/api/addFoodEaten', {
-            food: selectedFood,
+            foodID: selectedFoodDish.id,
             grams: grams,
             quantity: quantity,
             mealType: mealType
         })
 
-        await getAndHandleUserData()
+        await getData(['foodEaten'])
 
         setIsLoading(false)
 
@@ -88,20 +128,17 @@ export function AddFoodCard({ getAndHandleUserData, userData, mealType, setIsDis
                 borderRadius: 5
             }}
         >
-            <AddFoodDishCardTitle
-                mealType={mealType}
+            {/* Title */}
+            <AddFoodDishCardTitle 
                 mealCalories={mealCalories}
                 mealCaloriesIncrease={mealCaloriesIncrease}
-                userData={userData}
             />
 
             {/* Input Fields */}
-            <AddFoodDishTextField
+            <AddFoodDishTextField 
                 setIsDish={setIsDish}
-                foods={foods}
-                dishes={dishes}
-                selectedFood={selectedFood}
-                setSelectedFood={setSelectedFood}
+                selectedFoodDish={selectedFoodDish}
+                setSelectedFoodDish={setSelectedFoodDish}
                 grams={grams}
                 setGrams={setGrams}
                 quantity={quantity}
@@ -111,7 +148,6 @@ export function AddFoodCard({ getAndHandleUserData, userData, mealType, setIsDis
                 isError={isError}
                 setIsError={setIsError}
                 renderTrigger={renderTrigger}
-                setRenderTrigger={setRenderTrigger}
             />
 
             {/* Buttons */}

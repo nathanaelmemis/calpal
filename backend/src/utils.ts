@@ -5,11 +5,20 @@ interface DataInterface {
     [key: string]: any
 }
 
-function routeLog(req: { path: any }, msg: string) {
+export function routeLog(req: { path: any }, msg: string) {
     console.log(`[${req.path}]`, msg)
 }
 
-function validateData(req: Request, res: Response, data: DataInterface, schema: DataInterface) {
+/**
+ * Data and Schema passed should be an object. 
+ * @param req 
+ * @param res 
+ * @param data 
+ * @param schema 
+ * @returns 
+ */
+export function validateData(req: Request, res: Response, data: DataInterface, schema: DataInterface) {
+
     try {
         const schemaKeys = Object.keys(schema)
         const dataKeys = Object.keys(data)
@@ -26,6 +35,7 @@ function validateData(req: Request, res: Response, data: DataInterface, schema: 
 
         // Check if types match
         for (const key of schemaKeys) {
+            // Check if types match
             assert(typeof data[key] === typeof schema[key], `Type Mismatch: ${key}`)
 
             // Recursively validate nested objects
@@ -40,8 +50,15 @@ function validateData(req: Request, res: Response, data: DataInterface, schema: 
                 // Iterate over each element in the array
                 for (const element of data[key]) {
                     // Schema arrays should always have a single element to validate against
-                    if (!validateData(req, res, element, schema[key][0])) { 
-                        return false
+
+                    // if elements are not objects
+                    assert(typeof data[key] === typeof schema[key], `Type Mismatch: ${key}`)
+                    
+                    // recursively validate the element if object
+                    if (typeof schema[key] === 'object' && !Array.isArray(schema[key])) {
+                        if (!validateData(req, res, element, schema[key][0])) { 
+                            return false
+                        }
                     }
                 }
             }
@@ -53,9 +70,4 @@ function validateData(req: Request, res: Response, data: DataInterface, schema: 
     }
 
     return true
-}
-
-module.exports = {
-    routeLog,
-    validateData
 }

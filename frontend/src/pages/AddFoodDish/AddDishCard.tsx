@@ -1,102 +1,220 @@
 import { Grid, TextField, useMediaQuery, useTheme } from "@mui/material";
 import axios from "axios";
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactElement, Dispatch, SetStateAction, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserDataInterface, FoodInterface, DishInterface, MealsFoodEatenInterface, MealsDishEatenInterface, DishFoodInterface } from "../../Interface";
 import AddFoodDishButtons from "./AddFoodDishButtons";
 import AddFoodDishCardTitle from "./AddFoodDishCardTitle";
 import AddFoodDishTextField from "./AddFoodDishTextField";
 import AddDishCardServingTextField from "./AddDishCardServingTextField";
+import { DishFood } from "../../interfaces/dishFood";
+import { UserDataContext } from "../../context/UserDataContext";
+import { FoodEaten } from "../../interfaces/foodEaten";
+import { DishEaten } from "../../interfaces/dishEaten";
+import { SelectedFoodDish } from "../../interfaces/selectedFoodDish";
+import { calculateDishMacros } from "../../utils/calculateDishMacros";
+import { Macros } from "../../interfaces/macros";
 
-interface AddDishCardInterface {
-    getAndHandleUserData: Function,
-    userData: UserDataInterface,
-    mealType: string,
-    setIsDish: (isDish: boolean) => void,
-    selectedFood: string,
-    setSelectedFood: (food: string) => void,
-    foods: FoodInterface[],
-    dishes: DishInterface[],
-    mealsFoodEaten: MealsFoodEatenInterface,
-    mealsDishEaten: MealsDishEatenInterface,
-    setMacrosIncrease: (calories: number, protein: number, carbs: number, fats: number, grams: number, quantity: number) => void
+interface AddDishCard {
+    setIsDish: Dispatch<SetStateAction<boolean>>,
+    selectedFoodDish: SelectedFoodDish,
+    setSelectedFoodDish: Dispatch<SetStateAction<SelectedFoodDish>>,
+    setMacrosIncrease: (macros: Macros) => void
 }
 
-function AddDishCard(props: AddDishCardInterface) {
+export function AddDishCard({ setIsDish, selectedFoodDish, setSelectedFoodDish, setMacrosIncrease}: AddDishCard) {
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate();
 
-    const [grams, setGrams] = useState(0)
-    const [quantity, setQuantity] = useState(1) 
-    const [foodServing, setFoodServing] = useState(props.dishes.find(dish => dish.name === props.selectedFood)?.foods.map((food) => {return food.defaultServing }) || [0])
+    const {
+        foods,
+        dishes,
+        foodEaten,
+        dishEaten,
+        getData,
+        mealType
+    } = useContext(UserDataContext)
 
-    const [mealCalories, setMealCalories] = useState(0)
-    const [mealCaloriesIncrease, setMealCaloriesIncrease] = useState(0)
+    const [grams, setGrams] = useState<number>(0)
+    const [quantity, setQuantity] = useState<number>(1) 
+    const [foodServing, setFoodServing] = useState<number[]>([0])
 
-    const [isLoading, setIsLoading] = useState(false)
-    const [isError, setIsError] = useState(false)
+    const [mealCalories, setMealCalories] = useState<number>(0)
+    const [mealCaloriesIncrease, setMealCaloriesIncrease] = useState<number>(0)
 
-    const [renderTrigger, setRenderTrigger] = useState(0)
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [isError, setIsError] = useState<boolean>(false)
 
-    const [renderedDishFoodItems, setRenderedDishFoodItems]: [Element[], Function] = useState([])
+    const [renderTrigger, setRenderTrigger] = useState<number>(0)
+
+    // Initial values
+    useEffect(() => {
+        const dish = dishes.find(dish => dish._id === selectedFoodDish.id)
+
+        if (!dish) {
+            console.error('Dish not found:', selectedFoodDish)
+            return
+        }
+
+        setGrams(dish.defaultServing)
+        setFoodServing(dish.foods.map((food) => {return food.defaultServing }))
+        setRenderTrigger(renderTrigger + 1)
+    }, [selectedFoodDish])
 
     // Update mealCaloriesIncrease when grams or quantity changes
     useEffect(() => {
-        const dish = props.dishes.find(dish => dish.name === props.selectedFood)
+        const dishMacros = 
+            {...calculateDishMacros(
+                foods, 
+                dishes, 
+                selectedFoodDish.id, 
+                foodServing,
+                grams,
+                quantity
+            )}
 
-        if (!dish) return
-
-        let calories = 0
-        let carbs = 0
-        let protein = 0
-        let fats = 0
-
-        dish.foods.forEach((food: DishFoodInterface, index: number) => {
-            const foodDetails = props.foods.find((foodItem: FoodInterface) => foodItem.name === food.food)
-
-            calories += (foodDetails?.calories || 0) * foodServing[index]
-            protein += (foodDetails?.protein || 0) * foodServing[index]
-            carbs += (foodDetails?.carbs || 0) * foodServing[index]
-            fats += (foodDetails?.fats || 0) * foodServing[index]
+        setMacrosIncrease({
+            calories: dishMacros.calories,
+            protein: dishMacros.protein,
+            carbs: dishMacros.carbs,
+            fats: dishMacros.fats
         })
-
-        const dishEatenItemTotalServing = foodServing.reduce((acc: number, serving: number) => acc + serving, 0)
-
-        if (dishEatenItemTotalServing) {
-            calories /= dishEatenItemTotalServing
-            protein /= dishEatenItemTotalServing
-            carbs /= dishEatenItemTotalServing
-            fats /= dishEatenItemTotalServing
-        }
-
-        props.setMacrosIncrease(calories, protein, carbs, fats, grams, quantity)
-        setMealCaloriesIncrease(calories * grams * quantity)
+        setMealCaloriesIncrease(dishMacros.calories)
     }, [grams, quantity, foodServing])
 
-    // Check if meal type is valid
+    // Update mealCalories when mealType, foodEaten, or dishEaten changes
     useEffect(() => {
         setMealCalories(
-            props.mealsFoodEaten[props.mealType.toLowerCase()].reduce((acc: number, item: any) => acc + item.calories * item.grams * item.quantity, 0)
-            + props.mealsDishEaten[props.mealType.toLowerCase()].reduce((acc: number, item: any) => acc + item.calories * item.grams * item.quantity, 0)
+            foodEaten
+                .filter((item: FoodEaten) => item.mealType === mealType)
+                .reduce((acc: number, item: any) => acc + item.calories * item.grams * item.quantity, 0)
+            + dishEaten
+                .filter((item: DishEaten) => item.mealType === mealType)
+                .reduce((acc: number, item: any) => acc + item.calories * item.grams * item.quantity, 0)
         )
-    }, [props.mealType])
+    }, [mealType, foodEaten, dishEaten])
 
-    // Update renderedDishFoodItems when selectedFood changes
-    useEffect(() => {
-        setRenderedDishFoodItems(props.dishes.find(dish => dish.name === props.selectedFood)?.foods.map((dishFoodItem: DishFoodInterface, index: number) => (
-            <Grid
+    async function handleAddDish() {
+        setIsLoading(true)
+
+        if (!selectedFoodDish) {
+            setIsLoading(false)
+            setIsError(true)
+            return
+        }
+
+        await axios.post('/api/addDishEaten', {
+            dishID: selectedFoodDish.id,
+            grams: grams,
+            quantity: quantity,
+            mealType: mealType,
+            foodServing: foodServing
+        })
+
+        await getData(['dishEaten'])
+
+        setIsLoading(false)
+
+        navigate('/dashboard')
+    }
+    
+    return (
+        <Grid
+            container
+            bgcolor={'primary.main'}
+            p={isMobile ? '1em' : '1em 2em 1.5em 2em'}
+            mb={isMobile ? '1em' : '2em'}
+            display={'flex'}
+            justifyContent={'space-between'}
+            sx={{
+                boxShadow: 5,
+                borderRadius: 5
+            }}
+        >
+            <AddFoodDishCardTitle
+                mealCalories={mealCalories}
+                mealCaloriesIncrease={mealCaloriesIncrease}
+            />
+
+            {/* Input Fields */}
+            <AddFoodDishTextField
+                setIsDish={setIsDish}
+                selectedFoodDish={selectedFoodDish}
+                setSelectedFoodDish={setSelectedFoodDish}
+                grams={grams}
+                setGrams={setGrams}
+                quantity={quantity}
+                setQuantity={setQuantity}
+                setMacrosIncrease={setMacrosIncrease}
+                setMealCaloriesIncrease={setMealCaloriesIncrease}
+                isError={isError}
+                setIsError={setIsError}
+                renderTrigger={renderTrigger}
+            />
+
+            {/* Dish Foods Text Field Rows */}
+            <DishFoodList
+                selectedFoodDish={selectedFoodDish}
+                foodServing={foodServing}
+                setFoodServing={setFoodServing}
+                renderTrigger={renderTrigger}
+            />
+
+            {/* Buttons */}
+            <AddFoodDishButtons
+                handleAddFoodOrDish={handleAddDish}
+                isLoading={isLoading}
+            />
+        </Grid>
+    )
+}
+
+interface DishFoodListProps {
+    selectedFoodDish: SelectedFoodDish
+    foodServing: number[],
+    setFoodServing: Dispatch<SetStateAction<number[]>>,
+    renderTrigger: number
+}
+
+function DishFoodList({ selectedFoodDish, foodServing, setFoodServing, renderTrigger }: DishFoodListProps): ReactElement[] {
+    const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
+
+    const {
+        foods,
+        dishes
+    } = useContext(UserDataContext)
+
+    if (!selectedFoodDish) {
+        return []
+    }
+
+    const dish = dishes.find(dish => dish._id === selectedFoodDish.id)
+
+    if (!dish) {
+        console.error('Dish not found:', selectedFoodDish)
+        return []
+    }
+
+    return (
+        dish.foods.map((dishFoodItem: DishFood, index: number) => {
+            const food = foods.find(food => food._id === dishFoodItem.foodID)
+
+            if (!food) {
+                console.error('Food not found:', dishFoodItem)
+            }
+
+            return <Grid
                 container
-                key={index + renderTrigger}
-                mt={'1em'}
+                key={index}
                 columnSpacing={2}
                 justifyContent={'flex-end'}
+                mt={2}
             >
                 <Grid
                     item
                     xs={7}
                 >
                     <TextField 
-                        value={dishFoodItem.food}
+                        value={food?.name || ''}
                         color="secondary" 
                         fullWidth
                         size={isMobile ? 'small' : 'medium'}
@@ -118,99 +236,17 @@ function AddDishCard(props: AddDishCardInterface) {
                 </Grid>
                 <Grid
                     item
-                    xs={4}
+                    sm={4}
+                    xs={5}
                 >
                     <AddDishCardServingTextField
                         foodServing={foodServing}
                         setFoodServing={setFoodServing}
                         index={index}
-                        dishes={props.dishes}
-                        selectedFood={props.selectedFood}
+                        renderTrigger={renderTrigger}
                     />
                 </Grid>
             </Grid>
-        )) || [])
-    }, [props.selectedFood, foodServing, renderTrigger])
-
-    // Update foodServing when selectedFood changes
-    useEffect(() => {
-        setFoodServing(props.dishes.find(dish => dish.name === props.selectedFood)?.foods.map((food) => {return food.defaultServing }) || [0])
-    }, [props.selectedFood])
-
-    async function handleAddDish() {
-        setIsLoading(true)
-
-        if (!props.selectedFood) {
-            setIsLoading(false)
-            setIsError(true)
-            return
-        }
-
-        await axios.post('/api/addDishEaten', {
-            dish: props.selectedFood,
-            grams: grams,
-            quantity: quantity,
-            mealType: props.mealType,
-            foodServing: foodServing
         })
-
-        await props.getAndHandleUserData()
-
-        setIsLoading(false)
-
-        navigate('/dashboard')
-    }
-    
-    return (
-        <Grid
-            container
-            bgcolor={'primary.main'}
-            p={'1em 2em 1.5em 2em'}
-            display={'flex'}
-            justifyContent={'space-between'}
-            sx={{
-                boxShadow: 5,
-                borderRadius: 5
-            }}
-        >
-            <AddFoodDishCardTitle
-                mealType={props.mealType}
-                mealCalories={mealCalories}
-                mealCaloriesIncrease={mealCaloriesIncrease}
-                userData={props.userData}
-            />
-
-            {/* Input Fields */}
-            <AddFoodDishTextField
-                setIsDish={props.setIsDish}
-                foods={props.foods}
-                dishes={props.dishes}
-                selectedFood={props.selectedFood}
-                setSelectedFood={props.setSelectedFood}
-                grams={grams}
-                setGrams={setGrams}
-                quantity={quantity}
-                setQuantity={setQuantity}
-                setMacrosIncrease={props.setMacrosIncrease}
-                setMealCaloriesIncrease={setMealCaloriesIncrease}
-                isError={isError}
-                setIsError={setIsError}
-                renderTrigger={renderTrigger}
-                setRenderTrigger={setRenderTrigger}
-            />
-
-            {/* Dish Foods Text Field Rows */}
-            <>
-                {renderedDishFoodItems}
-            </>
-
-            {/* Buttons */}
-            <AddFoodDishButtons
-                handleAddFoodOrDish={handleAddDish}
-                isLoading={isLoading}
-            />
-        </Grid>
     )
 }
-
-export default AddDishCard;

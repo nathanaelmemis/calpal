@@ -1,28 +1,28 @@
-import { useState } from "react"
-import { DishInterface } from "../../Interface"
+import { Dispatch, SetStateAction, useEffect, useState } from "react"
 import { CalculatorTextField } from "../../components/CalculatorTextField"
 
 interface AddDishCardServingProps {
-    selectedFood: string,
-    dishes: DishInterface[],
-    foodServing: number[],
-    setFoodServing: Function,
+    foodServing: number[]
+    setFoodServing: Dispatch<SetStateAction<number[]>>
     index: number
+    renderTrigger: number
 }
 
-function AddDishCardServingTextField(props: AddDishCardServingProps) {
-    const [serving, setServing] = useState(props.dishes.find(dish => dish.name === props.selectedFood)?.foods[props.index].defaultServing || 0)
+function AddDishCardServingTextField({ foodServing, setFoodServing, index, renderTrigger }: AddDishCardServingProps) {
+    const [serving, setServing] = useState<number>(0)
+
+    useEffect(() => {
+        const newFoodServing = [...foodServing]
+        newFoodServing[index] = serving
+        setFoodServing(newFoodServing)
+    }, [serving])
     
     return (
         <CalculatorTextField
-            label="Serving (g)"
-            initialValue={serving}
-            setNumber={(newNumberValue: number) => {
-                const newFoodServing = [...props.foodServing]
-                newFoodServing[props.index] = newNumberValue
-                props.setFoodServing(newFoodServing)
-                setServing(newNumberValue)
-            }}
+            label="Serving (g/ratio)"
+            initialValue={foodServing[index]}
+            renderTrigger={renderTrigger}
+            setNumber={setServing}
         />
     )
 }

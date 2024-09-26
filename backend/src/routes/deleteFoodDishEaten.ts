@@ -37,12 +37,12 @@ export async function deleteFoodDishEaten(req: Request, res: Response) {
         }
 
         if (!result.deletedCount) {
-            throw new Error("Failed to insert dish eaten.")
+            throw new Error(`Failed To Delete Food/Dish Eaten: ${userID} ${foodDishEatenID}`)
         }
         
         utils.routeLog(req, `Food/Dish Eaten deleted: ${userID} ${foodDishEatenID}`)
 
-        res.status(200).send(result.insertedId)
+        res.status(200).send(result.deletedCount)
     } catch (error: any) {
         utils.routeLog(req, error.message)
         res.status(500).send(error)

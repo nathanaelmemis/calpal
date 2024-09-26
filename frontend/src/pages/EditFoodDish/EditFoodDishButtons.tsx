@@ -1,14 +1,22 @@
 import { LoadingButton } from "@mui/lab";
-import { Grid, Button } from "@mui/material";
-import { MouseEventHandler } from "react";
+import { Grid, Button, useMediaQuery, useTheme, Box } from "@mui/material";
+import { Dispatch, MouseEventHandler, SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface EditFoodDishButtonsProps {
-    isLoading: boolean;
-    handleUpdate: MouseEventHandler<HTMLButtonElement>;
+    isLoading: boolean
+    disabled: boolean
+    handleUpdate: MouseEventHandler<HTMLButtonElement>
+    setIsDeleteDialogOpen: Dispatch<SetStateAction<boolean>>
 }
 
-function EditFoodDishButtons(props: EditFoodDishButtonsProps) {
+export function EditFoodDishButtons({
+    isLoading,
+    disabled,
+    handleUpdate,
+    setIsDeleteDialogOpen
+}: EditFoodDishButtonsProps) {
+    const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate()
     
     return (
@@ -16,29 +24,44 @@ function EditFoodDishButtons(props: EditFoodDishButtonsProps) {
             item
             xs={12}
             display={'flex'}
-            justifyContent={'flex-end'}
-            mt={'1em'}
+            justifyContent={'space-between'}
         >
-            <Button
+            <LoadingButton
+                disabled={disabled}
+                loading={isLoading}
                 color="error"
                 variant="contained"
-                sx={{
-                    mr: 2
-                }}
-                onClick={() => navigate('/dashboard')}
+                onClick={() => setIsDeleteDialogOpen(true)}
+                size={isMobile ? "small" : "medium"}
             >
-                Cancel
-            </Button>
-            <LoadingButton
-                loading={props.isLoading}
-                color="secondary"
-                variant="contained"
-                onClick={props.handleUpdate}
-            >
-                Save
+                Delete
             </LoadingButton>
+            <Box
+                display={'flex'}
+                justifyContent={'flex-end'}
+            >
+                <Button
+                    color="secondary"
+                    variant="contained"
+                    sx={{
+                        mr: 2
+                    }}
+                    onClick={() => navigate('/dashboard')}
+                    size={isMobile ? "small" : "medium"}
+                >
+                    Cancel
+                </Button>
+                <LoadingButton
+                    disabled={disabled}
+                    loading={isLoading}
+                    color="secondary"
+                    variant="contained"
+                    onClick={handleUpdate}
+                    size={isMobile ? "small" : "medium"}
+                >
+                    Save
+                </LoadingButton>
+            </Box>
         </Grid>
     )
 }
-
-export default EditFoodDishButtons;

@@ -4,10 +4,15 @@ const utils = require("../utils.ts")
 const assert = require('assert');
 
 import {Request, Response} from 'express'
+import { DishFood } from "../interfaces/dishFood";
 
 export async function updateDish(req: Request, res: Response) {
     try {
         await client.connect()
+
+        // // FIXME: DISABLED
+        // res.sendStatus(501)
+        // return
 
         const data = req.body
         const userID = data.userID
@@ -19,7 +24,7 @@ export async function updateDish(req: Request, res: Response) {
             userID: "",
             name: "",
             defaultServing: 0,
-            foods: [{food: "", defaultServing: 0}]
+            foods: [0] // only accepts array of defaultServing because user shouldn't be able to update foodID
         }
         if (!utils.validateData(req, res, data, schema)) {
             return
@@ -54,8 +59,37 @@ export async function updateDish(req: Request, res: Response) {
             }
         })
 
+        // Divide data to designated update
+        const nonDishFoodData: {name?: string, defaultServing?: number} = {}
+        data.name? nonDishFoodData.name = data.name : null
+        data.defaultServing? nonDishFoodData.defaultServing = data.defaultServing : null
+
+        // Create bulk write operations
+        const bulkWriteOperations = []
+        if (Object.keys(nonDishFoodData).length > 0) {
+            bulkWriteOperations.push({
+                updateOne: {
+                    'filter': { _id: new ObjectId(dishID), userID: userID },
+                    'update': { $set: nonDishFoodData }
+                }
+            })
+        }
+        const dishFoodData: number[] = data.foods
+        dishFoodData.forEach((dishFoodDefaultServing, index) => {
+            bulkWriteOperations.push({
+                updateOne: {
+                    'filter': { _id: new ObjectId(dishID), userID: userID },
+                    'update': { $set: { [`foods.${index}.defaultServing`]: dishFoodDefaultServing } }
+                }
+            })
+        })
+
         // Update dish
-        await client.db("CalPal").collection("dishes").updateOne({ _id: new ObjectId(dishID), userID: userID }, { $set: data })
+        const result = await client.db("CalPal").collection("dishes").bulkWrite(bulkWriteOperations)
+
+        if (!result.modifiedCount) {
+            throw new Error(`Failed To Update Dish: ${userID} ${dishID}`)
+        }
 
         utils.routeLog(req, `Dish Updated: ${userID} ${dishID}`)
 

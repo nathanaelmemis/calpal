@@ -1,79 +1,56 @@
 import { Button, Grid, TextField, Typography, useMediaQuery, useTheme } from "@mui/material"
 import Header from "../../components/Header"
-import { UserDataInterface } from "../../Interface"
 import { useNavigate } from "react-router-dom"
-import { useEffect, useState } from "react"
+import { useContext, useState } from "react"
 import axios from "axios"
 import { LoadingButton } from "@mui/lab"
+import { UserDataContext } from "../../context/UserDataContext"
+import { checkAuth } from "../../utils/checkAuth"
 
-interface SettingsProps {
-    isDataPresent: boolean
-    getAndHandleUserData: () => void
-    userData: UserDataInterface
-}
+export function UserDataSettings() {
+    // Check if user is authenticated
+    if (!checkAuth()) return
 
-export function UserDataSettings(props: SettingsProps) {
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate()
 
-    const [name, setName] = useState(props.userData.name)
+    const {
+        userData,
+        getData
+    } = useContext(UserDataContext)
 
-    const [caloriesLimit, setCaloriesLimit] = useState(props.userData.caloriesLimit)
-    const [proteinLimit, setProteinLimit] = useState(props.userData.proteinLimit)
-    const [carbsLimit, setCarbsLimit] = useState(props.userData.carbsLimit)
-    const [fatsLimit, setFatsLimit] = useState(props.userData.fatsLimit)
+    const [name, setName] = useState(userData.name)
 
-    const [breakfastCaloriesLimit, setBreakfastCaloriesLimit] = useState(props.userData.breakfastCaloriesLimit)
-    const [lunchCaloriesLimit, setLunchCaloriesLimit] = useState(props.userData.lunchCaloriesLimit)
-    const [snacksCaloriesLimit, setSnacksCaloriesLimit] = useState(props.userData.snacksCaloriesLimit)
-    const [dinnerCaloriesLimit, setDinnerCaloriesLimit] = useState(props.userData.dinnerCaloriesLimit)
+    const [caloriesLimit, setCaloriesLimit] = useState(userData.caloriesLimit)
+    const [proteinLimit, setProteinLimit] = useState(userData.proteinLimit)
+    const [carbsLimit, setCarbsLimit] = useState(userData.carbsLimit)
+    const [fatsLimit, setFatsLimit] = useState(userData.fatsLimit)
+
+    const [breakfastCaloriesLimit, setBreakfastCaloriesLimit] = useState(userData.breakfastCaloriesLimit)
+    const [lunchCaloriesLimit, setLunchCaloriesLimit] = useState(userData.lunchCaloriesLimit)
+    const [snacksCaloriesLimit, setSnacksCaloriesLimit] = useState(userData.snacksCaloriesLimit)
+    const [dinnerCaloriesLimit, setDinnerCaloriesLimit] = useState(userData.dinnerCaloriesLimit)
 
     const [isLoading, setIsLoading] = useState(false)
-
-    // Check if user is authenticated
-    useEffect(() => {
-        async function checkAuth() {
-            try {
-                const res = await axios.post('/api/authenticate')
-    
-                if (res.status !== 200) {
-                    navigate('/login')
-                }
-            } catch (error) {
-                console.log(error)
-                navigate('/login')
-                return
-            }
-        }
-
-        checkAuth()
-    }, [])
-
-    // Get user data
-    useEffect(() => {
-        if (!props.isDataPresent) {
-            navigate('/dashboard')
-        }
-    })
 
     async function handleSave() {
         setIsLoading(true)
 
         try {
             const res = await axios.post('/api/updateUserData', {
-                name: name !== props.userData.name ? name : '',
-                caloriesLimit: caloriesLimit !== props.userData.caloriesLimit ? caloriesLimit : -1,
-                proteinLimit: proteinLimit !== props.userData.proteinLimit ? proteinLimit : -1,
-                carbsLimit: carbsLimit !== props.userData.carbsLimit ? carbsLimit : -1,
-                fatsLimit: fatsLimit !== props.userData.fatsLimit ? fatsLimit : -1,
-                breakfastCaloriesLimit: breakfastCaloriesLimit !== props.userData.breakfastCaloriesLimit ? breakfastCaloriesLimit : -1,
-                lunchCaloriesLimit: lunchCaloriesLimit !== props.userData.lunchCaloriesLimit ? lunchCaloriesLimit : -1,
-                snacksCaloriesLimit: snacksCaloriesLimit !== props.userData.snacksCaloriesLimit ? snacksCaloriesLimit : -1,
-                dinnerCaloriesLimit: dinnerCaloriesLimit !== props.userData.dinnerCaloriesLimit ? dinnerCaloriesLimit : -1
+                name: name !== userData.name ? name : '',
+                caloriesLimit: caloriesLimit !== userData.caloriesLimit ? caloriesLimit : -1,
+                proteinLimit: proteinLimit !== userData.proteinLimit ? proteinLimit : -1,
+                carbsLimit: carbsLimit !== userData.carbsLimit ? carbsLimit : -1,
+                fatsLimit: fatsLimit !== userData.fatsLimit ? fatsLimit : -1,
+                breakfastCaloriesLimit: breakfastCaloriesLimit !== userData.breakfastCaloriesLimit ? breakfastCaloriesLimit : -1,
+                lunchCaloriesLimit: lunchCaloriesLimit !== userData.lunchCaloriesLimit ? lunchCaloriesLimit : -1,
+                snacksCaloriesLimit: snacksCaloriesLimit !== userData.snacksCaloriesLimit ? snacksCaloriesLimit : -1,
+                dinnerCaloriesLimit: dinnerCaloriesLimit !== userData.dinnerCaloriesLimit ? dinnerCaloriesLimit : -1
             })
 
             if (res.status === 200) {
-                await props.getAndHandleUserData()
+                await getData(['userData'])
                 navigate('/dashboard')
             }
         } catch (error) {
@@ -85,7 +62,7 @@ export function UserDataSettings(props: SettingsProps) {
     
     return (
         <>
-            <Header userName={props.userData.name}/>
+            <Header />
 
             <Grid
                 container

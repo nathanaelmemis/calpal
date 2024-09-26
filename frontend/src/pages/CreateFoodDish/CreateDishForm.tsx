@@ -1,43 +1,42 @@
 import { Button, Grid, IconButton, TextField, useMediaQuery, useTheme } from "@mui/material";
 import { AddCircle as AddCircleIcon, RemoveCircle as RemoveCircleIcon} from '@mui/icons-material';
-import { DishDataInterface, FoodInterface } from "../../Interface";
-import { useEffect, useState } from "react";
-import CreateDishFormFoodRowTextField from "./CreateDishFormFoodRowTextField";
+import { useContext, useState } from "react";
+import { CreateDishFormFoodRowTextField } from "./CreateDishFormFoodRowTextField";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import CreateFoodButtons from "./CreateFoodButtons";
+import { CreateFoodDishButtons } from "./CreateFoodDishButtons";
 import { CalculatorTextField } from "../../components/CalculatorTextField";
+import { UserDataContext } from "../../context/UserDataContext";
+import { DishFood } from "../../interfaces/dishFood";
 
-interface CreateDishFormInterface {
-    foods: FoodInterface[],
-    getAndHandleUserData: Function
-}
+export function CreateDishForm() {
+    const {
+        getData
+    } = useContext(UserDataContext)
 
-function CreateDishForm({ foods, getAndHandleUserData }: CreateDishFormInterface) {
-    const [renderedDishData, setRenderedDishData]: [Element[], Function] = useState([])
-    const [refreshTrigger, setRefreshTrigger] = useState(Date.now().toFixed())
+    const [refreshTrigger, setRefreshTrigger] = useState<string>(Date.now().toFixed())
     const [isLoading, setIsLoading] = useState(false)
     const [isFoodAlreadyExist, setIsFoodAlreadyExist] = useState(false)
 
     const [foodName, setFoodName] = useState('')    
     const [defaultServing, setDefaultServing] = useState(1)
-    const [dishData, setDishData]: [DishDataInterface[], Function] = useState([
-        { food: '', defaultServing: 1 }
+    const [dishData, setDishData] = useState<DishFood[]>([
+        { foodID: '', defaultServing: 1 }
     ])
     
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate()
     
     function handleRemoveButtonOnClick(index: number) {
-        const disDataTemp = dishData.filter((_, i) => i !== index)
+        const disDataTemp = [...dishData.filter((_, i) => i !== index)]
 
         if (disDataTemp.length === 0) {
-            setDishData([{food: '', defaultServing: 1}])
+            setDishData([{foodID: '', defaultServing: 1}])
         } else {
             setDishData(disDataTemp)
         }
 
-        setRefreshTrigger(Date.now().toFixed())
+        setRefreshTrigger(refreshTrigger + 1)
     }
 
     async function handleCreateButtonClick() {
@@ -51,7 +50,7 @@ function CreateDishForm({ foods, getAndHandleUserData }: CreateDishFormInterface
             })
 
             if (res.status === 200) {
-                await getAndHandleUserData()
+                await getData(['dishes'])
                 navigate(-1)
             }
         } catch (error: any) {
@@ -59,51 +58,11 @@ function CreateDishForm({ foods, getAndHandleUserData }: CreateDishFormInterface
                 setIsFoodAlreadyExist(true)
             }
 
-            console.log(error)
+            console.error(error)
         }
 
         setIsLoading(false)
     }
-
-    useEffect(() => {
-        setRenderedDishData(dishData.map((food: DishDataInterface, index) => (
-            <Grid
-                key={index + refreshTrigger}
-                item
-                xs={12}
-                display={'flex'}
-                alignItems={'flex-start'}
-            >
-                <Grid
-                    item
-                    xs={1}
-                    display={'flex'}
-                    justifyContent={'center'}>  
-                    <IconButton
-                        color="error"
-                        onClick={() => handleRemoveButtonOnClick(index)}
-                    >
-                        <RemoveCircleIcon />
-                    </IconButton>
-                </Grid>
-                <Grid
-                    item
-                    xs={11}
-                    columnGap={2}
-                    display={'flex'}
-                >   
-                    <CreateDishFormFoodRowTextField 
-                        foods={foods}
-                        foodInitialValue={food.food}
-                        defaultServingInitialValue={food.defaultServing}
-                        index={index}
-                        dishData={dishData}
-                        setDishData={setDishData}
-                    />
-                </Grid>
-            </Grid>
-        )))
-    }, [refreshTrigger])
 
     return (
         <>
@@ -141,12 +100,53 @@ function CreateDishForm({ foods, getAndHandleUserData }: CreateDishFormInterface
                     <CalculatorTextField
                         label="Default Serving (g)"
                         initialValue={1}
-                        setNumber={(newNumberValue: number) => setDefaultServing(newNumberValue)}
+                        setNumber={setDefaultServing}
                     />
                 </Grid>
             </Grid>
             
-            {renderedDishData}
+            {/* Dish Food List */}
+            {
+                dishData.map((dishFood: DishFood, index) => (
+                    <Grid
+                        key={index + refreshTrigger}
+                        item
+                        xs={12}
+                        display={'flex'}
+                        alignItems={'center'}
+                    >
+                        <Grid
+                            item
+                            xs={1.5}
+                            sm={1}
+                            display={'flex'}
+                            justifyContent={'center'}>  
+                            <IconButton
+                                color="error"
+                                size="small"
+                                onClick={() => handleRemoveButtonOnClick(index)}
+                            >
+                                <RemoveCircleIcon />
+                            </IconButton>
+                        </Grid>
+                        <Grid
+                            item
+                            xs={10.5}
+                            sm={11}
+                            columnGap={2}
+                            display={'flex'}
+                        >   
+                            <CreateDishFormFoodRowTextField 
+                                initialValueFoodID={dishFood.foodID}
+                                defaultServingInitialValue={dishFood.defaultServing}
+                                index={index}
+                                dishData={dishData}
+                                setDishData={setDishData}
+                            />
+                        </Grid>
+                    </Grid>
+                ))
+            }
 
             {/* Add Food TextField Button */}
             <Button 
@@ -154,8 +154,8 @@ function CreateDishForm({ foods, getAndHandleUserData }: CreateDishFormInterface
                 color="secondary"
                 variant="contained"
                 onClick={() => {
-                    setDishData((dishData: DishDataInterface[]) => [...dishData, {food: '', defaultServing: 1}])
-                    setRefreshTrigger(Date.now().toFixed())
+                    setDishData([...dishData, {foodID: '', defaultServing: 1}])
+                    setRefreshTrigger(refreshTrigger + 1)
                 }}
                 sx={{
                     mt: isMobile ? '0' : '1em'
@@ -166,12 +166,10 @@ function CreateDishForm({ foods, getAndHandleUserData }: CreateDishFormInterface
                 />
             </Button>
 
-            <CreateFoodButtons 
+            <CreateFoodDishButtons 
                 isLoading={isLoading}
                 handleCreateButtonClick={handleCreateButtonClick}
             />
         </>
     )
 }
-
-export default CreateDishForm;

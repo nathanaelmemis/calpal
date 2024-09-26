@@ -1,73 +1,90 @@
 import { Box, Divider, Fade, Grid, Typography, useMediaQuery, useTheme } from "@mui/material";
 import Header from "../../components/Header";
-import { FoodEatenInterface, DishEatenInterface } from "../../Interface";
 import { NavigateButtonCard } from "../../components/NavigateButtonCard";
 import { Edit as EditIcon} from '@mui/icons-material';
-import { useEffect, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { DishEaten } from "../../interfaces/dishEaten";
+import { FoodEaten } from "../../interfaces/foodEaten";
+import { checkAuth } from "../../utils/checkAuth";
+import { UserDataContext } from "../../context/UserDataContext";
 
-interface CreateFoodInterface {
-    userName: string,
-    isDataPresent: boolean,
-    foodEaten: FoodEatenInterface[],
-    dishEaten: DishEatenInterface[],
-    setFoodDishEatenEditing: Function,
-}
-
-interface ConcatenatedFoodDishEatenInterface extends FoodEatenInterface{
+interface ConcatenatedFoodDishEaten{
+    id: string
+    name: string
+    mealType: string
+    date: string
+    grams: number
+    quantity: number
     isDish: boolean
 }
 
-export function ShowFoodDishEaten(props: CreateFoodInterface) {
+export function ShowFoodDishEaten() {
+    // Check if user is authenticated
+    if (!checkAuth()) return
+
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate()
 
-    // Check if user is authenticated
-    useEffect(() => {
-        async function checkAuth() {
-            try {
-                const res = await axios.post('/api/authenticate')
-    
-                if (res.status !== 200) {
-                    navigate('/login')
-                }
-            } catch (error) {
-                console.log(error)
-                navigate('/login')
-                return
-            }
-        }
+    const {
+        foods,
+        dishes,
+        foodEaten,
+        dishEaten,
+        setFoodDishEatenEditing
+    } = useContext(UserDataContext)
 
-        checkAuth()
-    }, [])
-
-    // Get user data
-    useEffect(() => {
-        if (!props.isDataPresent) {
-            navigate('/dashboard')
-        }
-    })
-
+    /**
+     * TODO: This algorithm can be optimized from O(n^2) to O(n) by using _id of foods and dishes as keys.
+     * - although this will be a time consuming refactor because foods and dishes are used in many components.
+     * - this is a temporary solution for now.
+     */
     // Concat food eaten and transformed dish eaten data
-    const foodDishEaten = Array<ConcatenatedFoodDishEatenInterface>()
+    const foodDishEaten = useRef<Array<ConcatenatedFoodDishEaten>>()
+    foodDishEaten.current = Array<ConcatenatedFoodDishEaten>()
         .concat(
-            props.foodEaten.map((foodEatenItem: FoodEatenInterface) => { // add isDish key to food eaten data
+            foodEaten.map((foodEatenItem: FoodEaten) => { // add isDish key to food eaten data
+                const food = foods.find((food) => food._id === foodEatenItem.foodID)
+
+                if (!food) {
+                    console.error('Food not found')
+                    return {
+                        id: foodEatenItem._id, 
+                        name: 'Food not found', 
+                        mealType: '', date: '', grams: 0, quantity: 0, isDish: false
+                    }
+                }
+
                 return ( 
                     {
-                        ...foodEatenItem,
+                        id: foodEatenItem._id,
+                        name: food?.name,
+                        mealType: foodEatenItem.mealType,
+                        date: foodEatenItem.date,
+                        grams: foodEatenItem.grams,
+                        quantity: foodEatenItem.quantity,
                         isDish: false
                     }
                 )
             }), 
-            props.dishEaten.map((dishEatenItem: DishEatenInterface) => { // transform dish eaten data
+            dishEaten.map((dishEatenItem: DishEaten) => { // transform dish eaten data
+                const dish = dishes.find((dish) => dish._id === dishEatenItem.dishID)
+
+                if (!dish) {
+                    console.error('Dish not found')
+                    return {
+                        id: dishEatenItem._id, 
+                        name: 'Dish not found', 
+                        mealType: '', date: '', grams: 0, quantity: 0, isDish: true
+                    }
+                }
+
                 return (
                     {
-                        _id: dishEatenItem._id,
-                        userID: dishEatenItem.userID,
+                        id: dishEatenItem._id,
+                        name: dish.name,
                         mealType: dishEatenItem.mealType,
                         date: dishEatenItem.date,
-                        food: dishEatenItem.dish,
                         grams: dishEatenItem.grams,
                         quantity: dishEatenItem.quantity,
                         isDish: true
@@ -75,13 +92,13 @@ export function ShowFoodDishEaten(props: CreateFoodInterface) {
                 )
             })
         )
-        .sort((a: ConcatenatedFoodDishEatenInterface, b: ConcatenatedFoodDishEatenInterface) => { // Sort by date latest to oldest
+        .sort((a: ConcatenatedFoodDishEaten, b: ConcatenatedFoodDishEaten) => { // Sort by date latest to oldest
             return new Date(b.date).getTime() - new Date(a.date).getTime()
         })
 
     return (
         <>
-            <Header userName={props.userName}/>
+            <Header />
 
             <NavigateButtonCard 
                 text={'Show Food Metrics'} 
@@ -173,7 +190,7 @@ export function ShowFoodDishEaten(props: CreateFoodInterface) {
                 <Divider sx={{ mb: '1.5em', borderColor: 'rgba(0, 0, 0, 0.2)' }} />
 
                 {
-                    foodDishEaten.length === 0 ? 
+                    foodDishEaten.current.length === 0 ? 
                     <Box 
                         width={'100%'}
                         display={'flex'}
@@ -182,12 +199,12 @@ export function ShowFoodDishEaten(props: CreateFoodInterface) {
                     >
                         <Typography>You haven't eaten yet.</Typography>
                     </Box> :
-                    foodDishEaten.map((food: ConcatenatedFoodDishEatenInterface) => {
+                    foodDishEaten.current.map((foodDishEatenItem: ConcatenatedFoodDishEaten) => {
                         const [isHovered, setIsHovered] = useState(false);
                         
                         return (
                             <Grid 
-                                key={food.food} 
+                                key={foodDishEatenItem.name} 
                                 container
                                 display={'flex'}
                                 my={'.5em'}
@@ -208,7 +225,7 @@ export function ShowFoodDishEaten(props: CreateFoodInterface) {
                                 onMouseEnter={() => setIsHovered(true)}
                                 onMouseLeave={() => setIsHovered(false)}
                                 onClick={() => {
-                                    props.setFoodDishEatenEditing(food._id, food.isDish)
+                                    setFoodDishEatenEditing({foodDishEatenEditingID: foodDishEatenItem.id, isDish: foodDishEatenItem.isDish})
                                     navigate('/editFoodEaten')
                                 }}
                             >
@@ -237,7 +254,7 @@ export function ShowFoodDishEaten(props: CreateFoodInterface) {
                                                 xs: theme.typography.body2.fontSize 
                                             },
                                         })}
-                                    >{food.food}</Typography>
+                                    >{foodDishEatenItem.name}</Typography>
                                 </Grid>
                                 <Grid
                                     item
@@ -252,7 +269,12 @@ export function ShowFoodDishEaten(props: CreateFoodInterface) {
                                                 xs: theme.typography.body2.fontSize 
                                             },
                                         })}
-                                    >{isMobile ? food.mealType[0] : food.mealType}</Typography>
+                                    >
+                                        {isMobile 
+                                            ? foodDishEatenItem.mealType[0].toUpperCase()
+                                            : foodDishEatenItem.mealType[0].toUpperCase() + foodDishEatenItem.mealType.slice(1)
+                                        }
+                                    </Typography>
                                 </Grid>
                                 <Grid
                                     item
@@ -267,7 +289,7 @@ export function ShowFoodDishEaten(props: CreateFoodInterface) {
                                                 xs: theme.typography.body2.fontSize 
                                             },
                                         })}
-                                    >{food.grams}</Typography>
+                                    >{foodDishEatenItem.grams}</Typography>
                                 </Grid>
                                 <Grid
                                     item
@@ -282,7 +304,7 @@ export function ShowFoodDishEaten(props: CreateFoodInterface) {
                                                 xs: theme.typography.body2.fontSize 
                                             },
                                         })}
-                                    >{food.quantity}</Typography>
+                                    >{foodDishEatenItem.quantity}</Typography>
                                 </Grid>
                             </Grid>
                         )

@@ -1,28 +1,45 @@
 import { Autocomplete, Grid, TextField, useMediaQuery, useTheme } from "@mui/material";
-import { DishDataInterface, FoodInterface } from "../../Interface";
-import { SyntheticEvent, useState } from "react";
+import { Dispatch, SetStateAction, SyntheticEvent, useContext, useState } from "react";
 import { CalculatorTextField } from "../../components/CalculatorTextField";
+import { Food } from "../../interfaces/food";
+import { UserDataContext } from "../../context/UserDataContext";
+import { DishFood } from "../../interfaces/dishFood";
+import { SelectedFoodDish } from "../../interfaces/selectedFoodDish";
 
-interface CreateDishFormFoodRowInterface { 
-    foods: FoodInterface[],
-    foodInitialValue: string,
+interface CreateDishFormFoodRowTextFieldProps {
+    initialValueFoodID: string,
     defaultServingInitialValue: number,
     index: number,
-    dishData: DishDataInterface[],
-    setDishData: Function
+    dishData: DishFood[],
+    setDishData: Dispatch<SetStateAction<DishFood[]>>
 }
 
-function CreateDishFormFoodRowTextField({ foods, foodInitialValue, defaultServingInitialValue, index, dishData, setDishData }: CreateDishFormFoodRowInterface) {
+export function CreateDishFormFoodRowTextField({ initialValueFoodID, defaultServingInitialValue, index, dishData, setDishData }: CreateDishFormFoodRowTextFieldProps) {
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
-    
-    const [autocompleteInputValue, setAutocompleteInputValue] = useState(foodInitialValue)
-    const [selectedFood, setSelectedFood] = useState(foodInitialValue)
 
-    function HandleOnChangeAutocomplete(_event: SyntheticEvent<Element, Event>, value: string | null) {
-        setSelectedFood(value || '')
+    const {
+        foods
+    } = useContext(UserDataContext)
+
+    const food = foods.find((food: Food) => food._id === initialValueFoodID)
+
+    if (!food && initialValueFoodID !== '') {
+        console.error('Food not found:', initialValueFoodID)
+    }
+    
+    const [autocompleteInputValue, setAutocompleteInputValue] = useState(food?.name || '')
+    const [selectedFood, setSelectedFood] = useState<SelectedFoodDish>({name: food?.name || '', id: food?._id || ''})
+
+    function handleOnChangeAutocomplete(_event: SyntheticEvent<Element, Event>, value: SelectedFoodDish | null) {
+        if (!value) {
+            setSelectedFood({name: '', id: ''})
+            return
+        }
+
+        setSelectedFood(value)
 
         const dishDataTemp = [...dishData]
-        dishDataTemp[index].food = value || ''
+        dishDataTemp[index] = {foodID: value.id, defaultServing: defaultServingInitialValue}
 
         setDishData(dishDataTemp)
     }
@@ -36,14 +53,15 @@ function CreateDishFormFoodRowTextField({ foods, foodInitialValue, defaultServin
                 <Autocomplete
                     disablePortal
                     id="combo-box-demo"
-                    options={foods.map((option: FoodInterface) => option.name)}
+                    options={foods.map((option) => {return {name: option.name, id: option._id}})}
+                    getOptionLabel={(option) => option.name}
                     fullWidth   
                     renderInput={(params) => <TextField {...params} label="Food" color="secondary"/>}
                     value={selectedFood}
-                    onChange={HandleOnChangeAutocomplete}
+                    onChange={handleOnChangeAutocomplete}
                     inputValue={autocompleteInputValue}
                     onInputChange={(_event, newInputValue) => {setAutocompleteInputValue(newInputValue)}}
-                    isOptionEqualToValue={(options, value) => options.valueOf === value.valueOf}
+                    isOptionEqualToValue={(options, value) => options.id.valueOf === value.id.valueOf}
                     sx={(theme) => ({
                         '& .MuiAutocomplete-input': {
                             fontSize: isMobile ? theme.typography.body2.fontSize : theme.typography.body1.fontSize
@@ -60,7 +78,7 @@ function CreateDishFormFoodRowTextField({ foods, foodInitialValue, defaultServin
                     label="Default Serving (g)"
                     initialValue={defaultServingInitialValue}
                     setNumber={(newNumberValue: number) => {
-                        setDishData((dishData: DishDataInterface[]) => {
+                        setDishData((dishData: DishFood[]) => {
                             const dishDataTemp = [...dishData]
                             dishDataTemp[index].defaultServing = newNumberValue
                             return dishDataTemp
@@ -71,5 +89,3 @@ function CreateDishFormFoodRowTextField({ foods, foodInitialValue, defaultServin
         </>
     )
 }
-
-export default CreateDishFormFoodRowTextField;

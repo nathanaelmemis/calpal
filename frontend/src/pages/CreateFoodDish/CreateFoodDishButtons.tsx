@@ -8,7 +8,7 @@ interface CreateFoodButtonsProps {
     handleCreateButtonClick: MouseEventHandler<HTMLButtonElement>
 }
 
-function CreateFoodButtons({ isLoading, handleCreateButtonClick}: CreateFoodButtonsProps) {
+export function CreateFoodDishButtons({ isLoading, handleCreateButtonClick}: CreateFoodButtonsProps) {
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate()
     
@@ -44,5 +44,3 @@ function CreateFoodButtons({ isLoading, handleCreateButtonClick}: CreateFoodButt
         </>
     )
 }
-
-export default CreateFoodButtons;

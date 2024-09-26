@@ -1,22 +1,25 @@
 import { Box, Button, Grid, Stack, TextField, Typography, useMediaQuery, useTheme } from "@mui/material"
 import Header from "../../components/Header"
-import { useEffect, useState } from "react"
+import { useContext, useState } from "react"
 import { LoadingButton } from "@mui/lab"
 import { useNavigate } from "react-router-dom"
 import CryptoJS from "crypto-js"
 import axios from "axios"
 import { EmailTextField } from "../../components/EmailTextField"
+import { checkAuth } from "../../utils/checkAuth"
+import { UserDataContext } from "../../context/UserDataContext"
+import { Loading } from "../../components/Loading"
 
-interface ChangePasswordProps {
-    isDataPresent: boolean
-    userName: string
-}
-
-export function ChangePassword(props: ChangePasswordProps) {
+export function ChangePassword() {
+    // Check if user is authenticated
+    if (!checkAuth()) return
+    
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate()
-    
-    const { userName } = props
+
+    const {
+        isFetchingData
+    } = useContext(UserDataContext)
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -26,32 +29,6 @@ export function ChangePassword(props: ChangePasswordProps) {
     const [isRewritePasswordIncorrect, setIsRewritePasswordIncorrect] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [isInvalidCredentials, setIsInvalidCredentials] = useState(false)
-
-    // Check if user is authenticated
-    useEffect(() => {
-        async function checkAuth() {
-            try {
-                const res = await axios.post('/api/authenticate')
-    
-                if (res.status !== 200) {
-                    navigate('/login')
-                }
-            } catch (error) {
-                console.log(error)
-                navigate('/login')
-                return
-            }
-        }
-
-        checkAuth()
-    }, [])
-
-    // Get user data
-    useEffect(() => {
-        if (!props.isDataPresent) {
-            navigate('/dashboard')
-        }
-    })
 
     function handleChangeRewritePassword(newValue: string) {
         setReEnterNewPassword(newValue)
@@ -96,8 +73,9 @@ export function ChangePassword(props: ChangePasswordProps) {
     }
 
     return (
+        isFetchingData ? <Loading /> :
         <>
-            <Header userName={userName}/>
+            <Header />
 
             <Grid
                 container

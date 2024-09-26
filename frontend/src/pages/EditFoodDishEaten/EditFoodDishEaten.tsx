@@ -1,28 +1,41 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Header from "../../components/Header";
 import { useNavigate } from "react-router-dom";
-import { DishEatenInterface, DishFoodInterface, DishInterface, FoodEatenInterface, FoodInterface } from "../../Interface";
-import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Autocomplete, Box, Button, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import { CalculatorTextField } from "../../components/CalculatorTextField";
+import { Dish } from "../../interfaces/dish";
+import { DishEaten } from "../../interfaces/dishEaten";
+import { DishFood } from "../../interfaces/dishFood";
+import { Food } from "../../interfaces/food";
+import { FoodEaten } from "../../interfaces/foodEaten";
+import { checkAuth } from "../../utils/checkAuth";
+import { DishFoodList } from "./EditFoodDishFoodList";
+import { DeleteAlertDialog } from "./EditFoodDishDeleteAlertDialog";
+import { UserDataContext } from "../../context/UserDataContext";
+import { SelectedFoodDish } from "../../interfaces/selectedFoodDish";
 
-interface EditFoodDishEatenProps {
-    userName: string,
-    isDataPresent: boolean,
-    getAndHandleUserData: () => void,
-    foodDishEatenEditing: {foodDishEatenEditingID: string, isDish: boolean},
-    foods: FoodInterface[],
-    dishes: DishInterface[],
-    foodEaten: FoodEatenInterface[],
-    dishEaten: DishEatenInterface[],
-}
+export default function EditFoodDishEaten() {
+    // Check if user is authenticated
+    if (!checkAuth()) return
 
-export default function EditFoodDishEaten(props: EditFoodDishEatenProps) {
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate()
 
-    const [selectedFood, setSelectedFood] = useState('')
+    const {
+        foods,
+        dishes,
+        foodEaten,
+        dishEaten,
+        getData,
+        foodDishEatenEditing
+    } = useContext(UserDataContext)
+
+    const foodOptions = foods.map((option) => ({name: option.name, id: option._id}))
+    const dishOptions = dishes.map((option) => ({name: option.name, id: option._id}))
+
+    const [selectedFood, setSelectedFood] = useState<SelectedFoodDish>({id: '', name: ''})
     const [autocompleteInputValue, setAutocompleteInputValue] = useState('')
     
     const [mealType, setMealType] = useState('Breakfast')
@@ -35,72 +48,80 @@ export default function EditFoodDishEaten(props: EditFoodDishEatenProps) {
 
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
-    // Check if user is authenticated
-    useEffect(() => {
-        async function checkAuth() {
-            try {
-                const res = await axios.post('/api/authenticate')
-    
-                if (res.status !== 200) {
-                    navigate('/login')
-                }
-            } catch (error) {
-                console.log(error)
-                navigate('/login')
-                return
-            }
-        }
-
-        checkAuth()
-    }, [])
-
-    // Get user data
-    useEffect(() => {
-        if (!props.isDataPresent) {
-            navigate('/dashboard')
-        }
-    })
+    const [renderTrigger, setRenderTrigger] = useState<number>(0)
 
     // Get initial food/dish data
     useEffect(() => {
-        const foodEatenItem = props.foodEaten.find((foodEatenItem: FoodEatenInterface) => {return foodEatenItem._id === props.foodDishEatenEditing.foodDishEatenEditingID})
-        const dishEatenItem = props.dishEaten.find((dishEatenItem: DishEatenInterface) => {return dishEatenItem._id === props.foodDishEatenEditing.foodDishEatenEditingID})
+        const foodEatenItem = foodEaten.find((foodEatenItem: FoodEaten) => {return foodEatenItem._id === foodDishEatenEditing.foodDishEatenEditingID})
+        const dishEatenItem = dishEaten.find((dishEatenItem: DishEaten) => {return dishEatenItem._id === foodDishEatenEditing.foodDishEatenEditingID})
     
+        if (!foodEatenItem && !dishEatenItem) {
+            console.error('Food/Dish Eaten not found:', foodDishEatenEditing)
+            return
+        }
+
+        if (foodEatenItem && dishEatenItem) {
+            console.error('ID collision between foodEaten and dishEaten:', foodEatenItem._id)
+            return
+        }
+
         if (foodEatenItem) {
-            setSelectedFood(foodEatenItem.food)
+            const food = foods.find((food: Food) => food._id === foodEatenItem.foodID)
+
+            if (!food) {
+                console.error('Food not found:', foodEatenItem)
+                return
+            }
+
+            setSelectedFood({id: food._id, name: food.name})
+            setAutocompleteInputValue(food.name)
             setGrams(foodEatenItem.grams)
             setQuantity(foodEatenItem.quantity)
             setIsDish(false)
         } else if (dishEatenItem) {
-            setSelectedFood(dishEatenItem.dish)
+            const dish = dishes.find((dish: Dish) => dish._id === dishEatenItem.dishID)
+
+            if (!dish) {
+                console.error('Dish not found:', dishEatenItem)
+                return
+            }
+
+            setSelectedFood({id: dish._id, name: dish.name})
+            setAutocompleteInputValue(dish.name)
             setGrams(dishEatenItem.grams)
             setQuantity(dishEatenItem.quantity)
             setIsDish(true)
             setFoodServing([...dishEatenItem.foodServing])
         }
+
+        setRenderTrigger(renderTrigger + 1)
     }, [])
 
-    function handleOnChangeAutocomplete(_event: any, newValue: any) {
-        const dish = props.dishes.find((dish: DishInterface) => dish.name === newValue)
+    function handleOnChangeAutocomplete(_event: any, newValue: SelectedFoodDish | null) {
+        if (!newValue) return
+
+        const dish = dishes.find((dish: Dish) => dish._id === newValue.id)
 
         if (dish) {
             setIsDish(true)
-            setAutocompleteInputValue(dish.name || selectedFood)
-            setSelectedFood(dish.name)
+            setAutocompleteInputValue(dish.name)
+            setSelectedFood({id: dish._id, name: dish.name})
             setGrams(dish.defaultServing)
             setQuantity(1)
-            setFoodServing([...dish.foods.map((dishFoodItem: DishFoodInterface) => dishFoodItem.defaultServing)])
+            setFoodServing([...dish.foods.map((dishFoodItem: DishFood) => dishFoodItem.defaultServing)])
             return
         }
 
-        const food = props.foods.find((food: FoodInterface) => food.name === newValue)
+        const food = foods.find((food: Food) => food._id === newValue.id)
 
         if (food) {
             setIsDish(false)
-            setAutocompleteInputValue(food.name || selectedFood)
-            setSelectedFood(food.name)
+            setAutocompleteInputValue(food.name)
+            setSelectedFood({id: food._id, name: food.name})
             setGrams(food.defaultServing)
             setQuantity(1)
+        } else {
+            console.error('Food/Dish not found:', newValue)
         }
     }
 
@@ -110,8 +131,8 @@ export default function EditFoodDishEaten(props: EditFoodDishEatenProps) {
         try {
             if (isDish) {
                 const res = await axios.put('/api/updateDishEaten', {
-                    dishEatenID: props.foodDishEatenEditing.foodDishEatenEditingID,
-                    dish: selectedFood,
+                    dishEatenID: foodDishEatenEditing.foodDishEatenEditingID,
+                    dishID: selectedFood.id,
                     grams: grams,
                     quantity: quantity,
                     mealType: mealType,
@@ -119,21 +140,21 @@ export default function EditFoodDishEaten(props: EditFoodDishEatenProps) {
                 })
     
                 if (res.status === 200) {
-                    await props.getAndHandleUserData()
+                    await getData(['dishEaten'])
                     setIsLoading(false)
                     navigate('/showFoodEaten')
                 }
             } else {
                 const res = await axios.put('/api/updateFoodEaten', {
-                    foodEatenID: props.foodDishEatenEditing.foodDishEatenEditingID,
-                    food: selectedFood,
+                    foodEatenID: foodDishEatenEditing.foodDishEatenEditingID,
+                    foodID: selectedFood.id,
                     grams: grams,
                     quantity: quantity,
                     mealType: mealType
                 })
     
                 if (res.status === 200) {
-                    await props.getAndHandleUserData()
+                    await getData(['foodEaten'])
                     setIsLoading(false)
                     navigate('/showFoodEaten')
                 }
@@ -150,13 +171,13 @@ export default function EditFoodDishEaten(props: EditFoodDishEatenProps) {
         try {
             const res = await axios.delete('/api/deleteFoodDishEaten', {
                 data: {
-                    foodDishEatenID: props.foodDishEatenEditing.foodDishEatenEditingID,
+                    foodDishEatenID: foodDishEatenEditing.foodDishEatenEditingID,
                     isDish: isDish
                 }
             })
 
             if (res.status === 200) {
-                await props.getAndHandleUserData()
+                await getData([isDish ? 'dishEaten' : 'foodEaten'])
                 setIsLoading(false)
                 navigate('/showFoodEaten')
             }
@@ -170,7 +191,7 @@ export default function EditFoodDishEaten(props: EditFoodDishEatenProps) {
 
     return (
         <>
-            <Header userName={props.userName} />
+            <Header />
 
             <Grid
                 bgcolor={'primary.main'}
@@ -212,14 +233,15 @@ export default function EditFoodDishEaten(props: EditFoodDishEatenProps) {
                         <Autocomplete
                             disablePortal
                             id="combo-box-demo"
-                            options={props.foods.map((option) => option.name).concat(props.dishes.map((option) => option.name))}
+                            options={isDish ? dishOptions : foodOptions}
+                            getOptionLabel={(option) => option.name}
                             fullWidth   
-                            renderInput={(params) => <TextField {...params} label="Food" color="secondary" />}
+                            renderInput={(params) => <TextField {...params} label={isDish ? "Dish" : "Food"} color="secondary" />}
                             value={selectedFood}
                             inputValue={autocompleteInputValue}
                             onChange={handleOnChangeAutocomplete}
                             onInputChange={(_event, newInputValue) => {setAutocompleteInputValue(newInputValue)}}
-                            isOptionEqualToValue={(options, value) => options.valueOf === value.valueOf}
+                            isOptionEqualToValue={(options, value) => options.id.valueOf === value.id.valueOf}
                             sx={(theme) => ({
                                 '& .MuiAutocomplete-input': {
                                     fontSize: isMobile ? theme.typography.body2.fontSize : theme.typography.body1.fontSize
@@ -266,6 +288,7 @@ export default function EditFoodDishEaten(props: EditFoodDishEatenProps) {
                         <CalculatorTextField
                             label="Serving (g)"
                             initialValue={grams}
+                            renderTrigger={renderTrigger}
                             setNumber={(newNumberValue: number) => setGrams(newNumberValue)}
                         />
                     </Grid>
@@ -277,6 +300,7 @@ export default function EditFoodDishEaten(props: EditFoodDishEatenProps) {
                         <CalculatorTextField
                             label="Quantity"
                             initialValue={quantity}
+                            renderTrigger={renderTrigger}
                             setNumber={(newNumberValue: number) => setQuantity(newNumberValue)}
                         />
                     </Grid>
@@ -286,7 +310,7 @@ export default function EditFoodDishEaten(props: EditFoodDishEatenProps) {
                 {
                     isDish && 
                     <DishFoodList 
-                        dishes={props.dishes}
+                        dishes={dishes}
                         selectedFood={selectedFood}
                         foodServing={foodServing}
                         handleOnChangeServing={(e: any, index: number, setServing: (newValue: number) => void) => {
@@ -340,7 +364,7 @@ export default function EditFoodDishEaten(props: EditFoodDishEatenProps) {
             </Grid>
 
             <DeleteAlertDialog 
-                foodDishEatenToDelete={selectedFood}
+                foodDishEatenToDelete={selectedFood.name}
                 open={isDeleteDialogOpen}
                 setOpen={setIsDeleteDialogOpen}
                 handleDelete={() => {
@@ -349,141 +373,5 @@ export default function EditFoodDishEaten(props: EditFoodDishEatenProps) {
                 }}
             />
         </>
-    )
-}
-
-interface DishfoodListProps {
-    dishes: DishInterface[],
-    selectedFood: string,
-    foodServing: number[],
-    handleOnChangeServing: (e: any, index: number, setServing: (newValue: number) => void) => void
-}
-
-function DishFoodList(props: DishfoodListProps) {
-    const [renderedList, setRenderedList]: [Element[], Function] = useState([])
-    // Get dish data
-    useEffect(() => {
-        const dish = props.dishes.find((dish: DishInterface) => dish.name === props.selectedFood)
-
-        if (!dish) return
-        
-        const renderedList = dish.foods.map((dishFoodItem: DishFoodInterface, index: number) => {
-
-            return (
-                <Grid
-                    container
-                    columnSpacing={2}
-                    display={'flex'}
-                    mb={'1em'}
-                    justifyContent={'flex-end'}
-                    key={Date.now().toFixed() + index.toString()}
-                >
-                    <Grid
-                        item
-                        xs={7}
-                    >
-                        <TextField 
-                            value={dishFoodItem.food}
-                            color="secondary" 
-                            fullWidth
-                            sx={{
-                                pointerEvents: 'none',
-                                '& .MuiOutlinedInput-root': {
-                                    '& fieldset': {
-                                        borderColor: 'rgba(0, 0, 0, 0.12)',
-                                    }
-                                }
-                            }}
-                        />
-                    </Grid>
-                    <Grid
-                        item
-                        xs={4}
-                    >
-                        <DishFoodItem 
-                            index={index}
-                            serving={props.foodServing[index]}
-                            handleOnChangeServing={props.handleOnChangeServing}
-                        />
-                    </Grid>
-                </Grid>
-            )
-        })
-
-        setRenderedList(renderedList)
-    }, [props.selectedFood])
-
-    return (
-        <>{renderedList}</>
-    )
-}
-
-interface DishFoodItemProps {
-    handleOnChangeServing: (e: any, index: number, setServing: (newValue: number) => void) => void,
-    index: number,
-    serving: number,
-}
-
-function DishFoodItem(props: DishFoodItemProps) {
-    const [serving, setServing] = useState(props.serving)
-
-    return (
-        <TextField
-            fullWidth
-            color="secondary"
-            label="Serving (g)"
-            value={serving}
-            onChange={(e) => props.handleOnChangeServing(e, props.index, setServing)}
-        />
-    )
-}
-
-interface DeleteAlertDialogProps {
-    foodDishEatenToDelete: string,
-    open: boolean,
-    setOpen: (newValue: boolean) => void,
-    handleDelete: () => void
-}
-
-function DeleteAlertDialog(props: DeleteAlertDialogProps) {
-    const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
-
-    return (
-        <Dialog
-            open={props.open}
-            onClose={() => props.setOpen(false)}
-            PaperProps={{
-                sx: {
-                    borderRadius: 5,
-                    p: '.5em 1.25em 1.25em .5em',
-                    width: '350px'
-                }
-            }}
-        >
-            <DialogTitle>{`Delete food/dish eaten ${props.foodDishEatenToDelete}?`}</DialogTitle>   
-            <DialogContent>
-                <DialogContentText>
-                    This action cannot be reversed.
-                </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-                <Button 
-                    color="secondary"
-                    variant="contained"
-                    onClick={() => props.setOpen(false)}
-                    size={isMobile ? "small" : "medium"}
-                >
-                    Cancel
-                </Button>
-                <Button 
-                    color="secondary"
-                    variant="contained"
-                    onClick={props.handleDelete}
-                    size={isMobile ? "small" : "medium"}
-                >
-                    Confirm
-                </Button>
-            </DialogActions>
-        </Dialog>
     )
 }

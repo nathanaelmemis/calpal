@@ -1,17 +1,18 @@
 import { Grid, TextField, useMediaQuery, useTheme } from "@mui/material";
-import { FoodDataInterface } from "../../Interface";
-import { useState } from "react";
-import CreateFoodButtons from "./CreateFoodButtons";
+import { useContext, useState } from "react";
+import { CreateFoodDishButtons } from "./CreateFoodDishButtons";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { CalculatorTextField } from "../../components/CalculatorTextField";
+import { FoodData } from "../../interfaces/foodData";
+import { UserDataContext } from "../../context/UserDataContext";
 
-interface CreateFoodFormInterface {
-    getAndHandleUserData: Function
-}
-
-function CreateFoodForm({ getAndHandleUserData }: CreateFoodFormInterface) {
+function CreateFoodForm() {
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
+
+    const {
+        getData
+    } = useContext(UserDataContext)
     
     const [foodName, setFoodName] = useState('')
     const [isFoodAlreadyExist, setIsFoodAlreadyExist] = useState(false)
@@ -20,7 +21,7 @@ function CreateFoodForm({ getAndHandleUserData }: CreateFoodFormInterface) {
     const navigate = useNavigate()
 
     // Food
-    const [foodData, setFoodData]: [FoodDataInterface, Function] = useState({
+    const [foodData, setFoodData]: [FoodData, Function] = useState({
         serving: 1,
         defaultServing: 1,
         calories: 0,
@@ -43,7 +44,7 @@ function CreateFoodForm({ getAndHandleUserData }: CreateFoodFormInterface) {
             })
 
             if (res.status === 200) {
-                await getAndHandleUserData()
+                await getData(['foods'])
                 navigate(-1)
             }
         } catch (error: any) {
@@ -94,7 +95,7 @@ function CreateFoodForm({ getAndHandleUserData }: CreateFoodFormInterface) {
                     <CalculatorTextField
                         label="Serving (g)"
                         initialValue={1}
-                        setNumber={(newNumberValue: number) => setFoodData((foodData: FoodDataInterface) => ({...foodData, serving: newNumberValue}))}
+                        setNumber={(newNumberValue: number) => setFoodData((foodData: FoodData) => ({...foodData, serving: newNumberValue}))}
                     />
                 </Grid>
                 <Grid
@@ -105,7 +106,7 @@ function CreateFoodForm({ getAndHandleUserData }: CreateFoodFormInterface) {
                     <CalculatorTextField
                         label="Default Serving (g)"
                         initialValue={1}
-                        setNumber={(newNumberValue: number) => setFoodData((foodData: FoodDataInterface) => ({...foodData, defaultServing: newNumberValue}))}
+                        setNumber={(newNumberValue: number) => setFoodData((foodData: FoodData) => ({...foodData, defaultServing: newNumberValue}))}
                     />
                 </Grid>
                 <Grid
@@ -116,18 +117,7 @@ function CreateFoodForm({ getAndHandleUserData }: CreateFoodFormInterface) {
                     <CalculatorTextField
                         label="Calories (kcal)"
                         initialValue={0}
-                        setNumber={(newNumberValue: number) => setFoodData((foodData: FoodDataInterface) => ({...foodData, calories: newNumberValue}))}
-                    />
-                </Grid>
-                <Grid
-                    item
-                    sm={4}
-                    xs={6}
-                >
-                    <CalculatorTextField
-                        label="Protein (g)"
-                        initialValue={0}
-                        setNumber={(newNumberValue: number) => setFoodData((foodData: FoodDataInterface) => ({...foodData, protein: newNumberValue}))}
+                        setNumber={(newNumberValue: number) => setFoodData((foodData: FoodData) => ({...foodData, calories: newNumberValue}))}
                     />
                 </Grid>
                 <Grid
@@ -138,7 +128,18 @@ function CreateFoodForm({ getAndHandleUserData }: CreateFoodFormInterface) {
                     <CalculatorTextField
                         label="Carbs (g)"
                         initialValue={0}
-                        setNumber={(newNumberValue: number) => setFoodData((foodData: FoodDataInterface) => ({...foodData, carbs: newNumberValue}))}
+                        setNumber={(newNumberValue: number) => setFoodData((foodData: FoodData) => ({...foodData, carbs: newNumberValue}))}
+                    />
+                </Grid>
+                <Grid
+                    item
+                    sm={4}
+                    xs={6}
+                >
+                    <CalculatorTextField
+                        label="Protein (g)"
+                        initialValue={0}
+                        setNumber={(newNumberValue: number) => setFoodData((foodData: FoodData) => ({...foodData, protein: newNumberValue}))}
                     />
                 </Grid>
                 <Grid
@@ -149,12 +150,12 @@ function CreateFoodForm({ getAndHandleUserData }: CreateFoodFormInterface) {
                     <CalculatorTextField
                         label="Fats (g)"
                         initialValue={0}
-                        setNumber={(newNumberValue: number) => setFoodData((foodData: FoodDataInterface) => ({...foodData, fats: newNumberValue}))}
+                        setNumber={(newNumberValue: number) => setFoodData((foodData: FoodData) => ({...foodData, fats: newNumberValue}))}
                     />
                 </Grid>
             </Grid>
 
-            <CreateFoodButtons 
+            <CreateFoodDishButtons 
                 isLoading={isLoading}
                 handleCreateButtonClick={handleCreateButtonClick}
             />

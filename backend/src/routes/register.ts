@@ -14,6 +14,13 @@ export async function register (req: Request, res: Response) {
 
         const data = req.body
 
+        const emailAlreadyUsed = await client.db("CalPal").collection("users").findOne({ email: data.email })
+
+        if (emailAlreadyUsed) {
+            res.status(400).send("Email already used.")
+            return
+        }
+
         const signedHash = CryptoJS.SHA256(data.hash + process.env.SECRET_KEY).toString(CryptoJS.enc.Hex)
 
         const usersResult = await client.db("CalPal").collection("users").insertOne({ email: data.email, hash: signedHash })

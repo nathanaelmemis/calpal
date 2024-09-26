@@ -1,27 +1,30 @@
-import { Autocomplete, Grid, TextField } from "@mui/material";
-import { FoodInterface } from "../../Interface";
-import { useEffect, useState } from "react";
-import EditFoodDishButtons from "./EditFoodDishButtons";
+import { Autocomplete, Grid, TextField, useMediaQuery, useTheme } from "@mui/material";
+import { useContext, useEffect, useState } from "react";
+import { EditFoodDishButtons } from "./EditFoodDishButtons";
 import axios from "axios";
 import { CalculatorTextField } from "../../components/CalculatorTextField";
+import { Food } from "../../interfaces/food";
+import { UserDataContext } from "../../context/UserDataContext";
+import { SelectedFoodDish } from "../../interfaces/selectedFoodDish";
+import { EditFoodDishDeleteAlertDialog } from "./EditFoodDishDeleteAlertDialog";
 
-interface EditFoodFormProps {
-    getAndHandleUserData: () => void
-    foods: FoodInterface[]
-}
+function EditFoodForm() {
+    const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
+    
+    const {
+        foods,
+        getData
+    } = useContext(UserDataContext)
 
-function EditFoodForm(props: EditFoodFormProps) {
-    const options = props.foods.map((option: FoodInterface) => option.name)
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [isFoodAlreadyExist, setIsFoodAlreadyExist] = useState<boolean>(false)
 
-    const [isLoading, setIsLoading] = useState(false)
-    const [isFoodAlreadyExist, setIsFoodAlreadyExist] = useState(false)
+    const [autocompleteInputValue, setAutocompleteInputValue] = useState<string>('')
+    const [selectedFood, setSelectedFood] = useState<SelectedFoodDish | null>(null)
 
-    const [autocompleteInputValue, setAutocompleteInputValue] = useState(options[0])
-    const [selectedFood, setSelectedFood] = useState(options[0])
-
-    const [foodName, setFoodName] = useState('')
-    const [serving, setServing] = useState(0)
-    const [defaultServing, setDefaultServing] = useState(0)
+    const [foodName, setFoodName] = useState<string>('')
+    const [serving, setServing] = useState(1)
+    const [defaultServing, setDefaultServing] = useState(1)
     const [calories, setCalories] = useState(0)
     const [protein, setProtein] = useState(0)
     const [carbs, setCarbs] = useState(0)
@@ -29,26 +32,48 @@ function EditFoodForm(props: EditFoodFormProps) {
 
     const [renderTrigger, setRenderTrigger] = useState(0)
 
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
+
     // Set food details when selected food changes
     useEffect(() => {
-        const food = props.foods.find((food: FoodInterface) => food.name === selectedFood)
-
-        if (food) {
-            setFoodName(food.name)
+        if (!selectedFood) {
+            setFoodName('')
             setServing(1)
-            setDefaultServing(food.defaultServing)
-            setCalories(food.calories)
-            setProtein(food.protein)
-            setCarbs(food.carbs)
-            setFats(food.fats)
+            setDefaultServing(1)
+            setCalories(0)
+            setProtein(0)
+            setCarbs(0)
+            setFats(0)
+            setRenderTrigger(renderTrigger + 1)
+            return
         }
+        const food = foods.find((food: Food) => food._id === selectedFood.id)
+
+        if (!food && selectedFood.id !== '') {
+            console.error('Food not found:', selectedFood)
+        }
+
+        setFoodName(food?.name || '')
+        setServing(1)
+        setDefaultServing(food?.defaultServing || 1)
+        setCalories(food?.calories || 0)
+        setProtein(food?.protein || 0)
+        setCarbs(food?.carbs || 0)
+        setFats(food?.fats || 0)
+
+        setRenderTrigger(renderTrigger + 1)
     }, [selectedFood])
 
     async function handleUpdate() {
         setIsLoading(true)
 
+        if (!selectedFood) {
+            setIsLoading(false)
+            return
+        }
+
         try {
-            const food = props.foods.find((food: FoodInterface) => food.name === selectedFood)
+            const food = foods.find((food: Food) => food._id === selectedFood.id)
 
             if (!food) throw new Error('Food not found')
 
@@ -63,8 +88,8 @@ function EditFoodForm(props: EditFoodFormProps) {
             })
 
             if (res.status === 200) {
-                props.getAndHandleUserData()
-                setSelectedFood(foodName)
+                getData(['foods', 'dishes'])
+                setSelectedFood(selectedFood)
             }
         } catch (error: any) {
             if (error.response.data === 'Food already exists.') {
@@ -76,6 +101,34 @@ function EditFoodForm(props: EditFoodFormProps) {
 
         setIsLoading(false)
     }
+
+    async function handleDelete() {
+        setIsLoading(true)
+        setIsDeleteDialogOpen(false)
+
+        if (!selectedFood) {
+            setIsLoading(false)
+            return
+        }
+
+        try {
+            const res = await axios.delete('/api/deleteFoodDish', {
+                data: {
+                    foodDishEatenID: selectedFood.id,
+                    isDish: false
+                }
+            })
+
+            if (res.status === 200) {
+                await getData(['foods', 'dishes'])
+                setSelectedFood(selectedFood)
+            }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
     
     return (
         <>
@@ -83,21 +136,31 @@ function EditFoodForm(props: EditFoodFormProps) {
             <Grid
                 item
                 xs={12}
-                mb={2}
+                mb={isMobile ? 1 : 2}
             >
                 <Autocomplete
                     disablePortal
-                    options={options}
+                    options={foods.map((option: Food) => ({name: option.name, id: option._id}))}
+                    getOptionLabel={(option) => option.name}
                     fullWidth   
                     renderInput={(params) => <TextField {...params} label="Food Editing" color="secondary"/>}
                     value={selectedFood}
                     onChange={(_event, newValue) => {
-                        setSelectedFood(newValue || options[0])
+                        setSelectedFood(newValue)
                         setRenderTrigger(renderTrigger + 1)
                     }}
                     inputValue={autocompleteInputValue}
                     onInputChange={(_event, newInputValue) => {setAutocompleteInputValue(newInputValue)}}
-                    isOptionEqualToValue={(options, value) => options.valueOf === value.valueOf}
+                    isOptionEqualToValue={(options, value) => options.id.valueOf === value.id.valueOf}
+                    size={isMobile ? 'small' : 'medium'}
+                    sx={(theme) => ({
+                        '& input': {
+                            fontSize: {
+                                sm: theme.typography.body1.fontSize,
+                                xs: theme.typography.body2.fontSize
+                            }
+                        }
+                    })}
                 />
             </Grid>
 
@@ -114,6 +177,15 @@ function EditFoodForm(props: EditFoodFormProps) {
                     color="secondary"
                     value={foodName}
                     onChange={(e) => setFoodName(e.target.value)}
+                    size={isMobile ? 'small' : 'medium'}
+                    sx={(theme) => ({
+                        '& input': {
+                            fontSize: {
+                                sm: theme.typography.body1.fontSize,
+                                xs: theme.typography.body2.fontSize
+                            }
+                        }
+                    })}
                 />
             </Grid>
 
@@ -196,10 +268,24 @@ function EditFoodForm(props: EditFoodFormProps) {
                 </Grid>
             </Grid>
 
+            {/* Buttons */}
             <EditFoodDishButtons 
                 isLoading={isLoading}
+                disabled={!selectedFood}
                 handleUpdate={handleUpdate}
+                setIsDeleteDialogOpen={setIsDeleteDialogOpen}
             />
+
+            {/* Delete Dialog */}
+            {
+                !selectedFood ? null : 
+                <EditFoodDishDeleteAlertDialog 
+                    open={isDeleteDialogOpen}
+                    setOpen={setIsDeleteDialogOpen}
+                    foodDishToDelete={selectedFood.name}
+                    handleDelete={handleDelete}
+                />
+            }
         </>
     )
 }

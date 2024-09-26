@@ -2,14 +2,14 @@ import { Grid, Typography, Tooltip, Box, Menu, MenuItem, useMediaQuery, useTheme
 
 import { Person as PersonIcon } from '@mui/icons-material';
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import axios from "axios";
+import { UserDataContext } from "../context/UserDataContext";
 
-interface HeaderProps {
-    userName: string
-}
+function Header() {
+    const { userData } = useContext(UserDataContext)
+    let userName = userData?.name || ''
 
-function Header(props: HeaderProps) {
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate()
 
@@ -47,7 +47,7 @@ function Header(props: HeaderProps) {
             >
                 CalPal
             </Typography>
-            {props.userName === '' ? null :
+            {userName === '' ? null :
                 <>
                     <Tooltip 
                         id="basic-button"
@@ -84,7 +84,7 @@ function Header(props: HeaderProps) {
                             <PersonIcon fontSize={isMobile ? 'medium' : "large"}/>
                             <Typography
                                 variant={isMobile ? 'body2' : 'body1'}
-                            >Hello, {props.userName}</Typography>
+                            >Hello, {userName}</Typography>
                         </Box>
                     </Tooltip>
                     <Menu

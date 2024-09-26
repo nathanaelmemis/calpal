@@ -4,6 +4,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { createTheme, ThemeProvider } from '@mui/material';
 import { grey, red } from '@mui/material/colors'
 import './main.css'
+import { UserDataContextProvider } from './context/UserDataContextProvider.js';
 
 const theme = createTheme({
     palette: {
@@ -32,7 +33,9 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
     <Router>
         <ThemeProvider theme={theme}>
-            <App />
+            <UserDataContextProvider>
+                <App />
+            </UserDataContextProvider>
         </ThemeProvider>
     </Router>
 );

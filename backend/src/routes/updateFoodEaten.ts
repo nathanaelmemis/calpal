@@ -17,7 +17,7 @@ export async function updateFoodEaten(req: Request, res: Response) {
             userID: "",
             foodEatenID: "",
             mealType: "",
-            food: "",
+            foodID: "",
             grams: 0,
             quantity: 0,
         }

@@ -1,7 +1,7 @@
 import { LoadingButton } from '@mui/lab';
 import { Alert, Box, Fade, Grid, Stack, TextField, Typography, useMediaQuery, useTheme } from "@mui/material";
 
-import { useEffect, useState } from "react";
+import { useContext, useState } from "react";
 
 import CryptoJS from "crypto-js"
 import axios from "axios";
@@ -9,10 +9,19 @@ import axios from "axios";
 import Header from "../../components/Header";
 import { Link, useNavigate } from 'react-router-dom';
 import { EmailTextField } from '../../components/EmailTextField';
+import { checkIfValidToken } from '../../utils/checkIfValidToken';
+import { UserDataContext } from '../../context/UserDataContext';
 
 export function Login() {
+    // Check if user token is still valid
+    if (!checkIfValidToken()) return
+
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate()
+
+    const {
+        getData
+    } = useContext(UserDataContext)
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -20,22 +29,6 @@ export function Login() {
     const [isLoading, setIsLoading] = useState(false)
     const [isFailedLogin, setIsFailedLogin] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
-
-    useEffect(() => {
-        async function checkAuth() {
-            try {
-                const res = await axios.post('/api/authenticate')
-    
-                if (res.status === 200) {
-                    navigate('/dashboard')
-                }
-            } catch (error) {
-                console.log(error)
-            }
-        }
-
-        checkAuth()
-    }, [])
 
     function handleOnChangeTextField(value: string, setFunction: Function) {
         setFunction(value)
@@ -57,13 +50,14 @@ export function Login() {
             })
 
             if (res.status === 200) {
+                getData(['userData', 'foods', 'dishes', 'foodEaten', 'dishEaten'])
                 navigate('/dashboard')
             }
         } catch (error: any) {
             console.error(error)
             setIsFailedLogin(true)
             setIsLoading(false)
-            setErrorMessage(error.response.data.message || error.code)
+            setErrorMessage(error.response.data || error.code)
         }
 
         setIsLoading(false)
@@ -71,7 +65,7 @@ export function Login() {
 
     return (
         <>
-            <Header userName={''}/>
+            <Header />
 
             <Grid
                 container
@@ -82,7 +76,8 @@ export function Login() {
                 sx={{
                     overflow: 'hidden',
                     boxShadow: 5,
-                    borderRadius: 5
+                    borderRadius: 5,
+                    mb: '2em'
                 }}
             >
                 <Grid
@@ -140,6 +135,7 @@ export function Login() {
                             setEmail={setEmail}
                         />
                         <TextField 
+                            required
                             label="Password"
                             color="secondary"
                             fullWidth

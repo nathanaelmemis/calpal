@@ -1,36 +1,46 @@
-import { Grid, Autocomplete, TextField, IconButton, Button } from "@mui/material";
-import { useEffect, useState } from "react";
-import { DishFoodInterface, DishInterface, FoodInterface } from "../../Interface";
-import { RemoveCircle as RemoveCircleIcon, AddCircle as AddCircleIcon } from '@mui/icons-material';
+import { Grid, Autocomplete, TextField, useMediaQuery, useTheme } from "@mui/material";
+import { useContext, useEffect, useState } from "react";
 import EditDishFormFoodRowTextField from "./EditDishFormFoodRowTextField";
-import EditFoodDishButtons from "./EditFoodDishButtons";
+import { EditFoodDishButtons } from "./EditFoodDishButtons";
 import axios from "axios";
+import { Dish } from "../../interfaces/dish";
+import { DishFood } from "../../interfaces/dishFood";
+import { UserDataContext } from "../../context/UserDataContext";
+import { SelectedFoodDish } from "../../interfaces/selectedFoodDish";
+import { EditFoodDishDeleteAlertDialog } from "./EditFoodDishDeleteAlertDialog";
 
-interface EditDishFormProps {
-    getAndHandleUserData: () => void
-    foods: FoodInterface[]
-    dishes: DishInterface[]
-}
+function EditDishForm() {
+    const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
+    
+    const {
+        dishes,
+        getData
+    } = useContext(UserDataContext)
 
-function EditDishForm(props: EditDishFormProps) {
-    const options = props.dishes.map((option: DishInterface) => option.name)
+    const [refreshTrigger, setRefreshTrigger] = useState<string>(Date.now().toFixed())
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [isDishAlreadyExist, setIsDishAlreadyExist] = useState<boolean>(false)
 
-    const [refreshTrigger, setRefreshTrigger] = useState(Date.now().toFixed())
-    const [isLoading, setIsLoading] = useState(false)
-    const [isDishAlreadyExist, setIsDishAlreadyExist] = useState(false)
+    const [autocompleteInputValue, setAutocompleteInputValue] = useState<string>('')
+    const [selectedDish, setSelectedDish] = useState<SelectedFoodDish | null>(null)
 
-    const [autocompleteInputValue, setAutocompleteInputValue] = useState(options[0])
-    const [selectedDish, setSelectedDish] = useState(options[0])
+    const [foodName, setDishName] = useState<string>('')    
+    const [defaultServing, setDefaultServing] = useState<number>(1)
+    const [dishData, setDishData] = useState<DishFood[]>([])
 
-    const [foodName, setDishName] = useState('')    
-    const [defaultServing, setDefaultServing] = useState(1)
-    const [dishData, setDishData]: [DishFoodInterface[], (dishData: DishFoodInterface[]) => any] = useState([
-        { food: '', defaultServing: 1 }
-    ])
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false)
 
     // Set food details when selected food changes
     useEffect(() => {
-        const dish = props.dishes.find((dish: DishInterface) => dish.name === selectedDish)
+        if (!selectedDish) {
+            setDishName('')
+            setDefaultServing(1)
+            setDishData([])
+            setRefreshTrigger(Date.now().toFixed())
+            return
+        }
+
+        const dish = dishes.find((dish: Dish) => dish._id === selectedDish.id)
 
         if (dish) {
             setDishName(dish.name)
@@ -41,36 +51,28 @@ function EditDishForm(props: EditDishFormProps) {
         }
     }, [selectedDish])
 
-    function handleRemoveButtonOnClick(index: number) {
-        const disDataTemp = dishData.filter((_, i) => i !== index)
-
-        if (disDataTemp.length === 0) {
-            setDishData([{food: '', defaultServing: 1}])
-        } else {
-            setDishData(disDataTemp)
-        }
-
-        setRefreshTrigger(Date.now().toFixed())
-    }
-
     async function handleUpdate() {
         setIsLoading(true)
 
+        if (!selectedDish) {
+            setIsLoading(false)
+            return
+        }
+
         try {
-            const dish = props.dishes.find((dish: DishInterface) => dish.name === selectedDish)
+            const dish = dishes.find((dish: Dish) => dish._id === selectedDish.id)
 
             if (!dish) throw new Error('Dish not found')
 
             const res = await axios.post('/api/updateDish', {
-                dishID: dish._id,
+                dishID: selectedDish.id,
                 name: foodName !== dish.name ? foodName : '',
                 defaultServing: defaultServing !== dish.defaultServing ? defaultServing : -1,
-                foods: dishData
+                foods: dishData.map((dishFood: DishFood) => (dishFood.defaultServing))
             })
 
             if (res.status === 200) {
-                await props.getAndHandleUserData()
-                setSelectedDish(foodName)
+                await getData(['dishes'])
             }
         } catch (error: any) {
             if (error.response.data === 'Dish already exists.') {
@@ -82,6 +84,33 @@ function EditDishForm(props: EditDishFormProps) {
 
         setIsLoading(false)
     }
+
+    async function handleDelete() {
+        setIsLoading(true)
+        setIsDeleteDialogOpen(false)
+
+        if (!selectedDish) {
+            setIsLoading(false)
+            return
+        }
+
+        try {
+            const res = await axios.delete('/api/deleteFoodDish', {
+                data: {
+                    foodDishEatenID: selectedDish.id,
+                    isDish: true
+                }
+            })
+
+            if (res.status === 200) {
+                await getData(['dishes'])
+            }
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
     
     return (
         <>
@@ -89,40 +118,100 @@ function EditDishForm(props: EditDishFormProps) {
             <Grid
                 item
                 xs={12}
-                mb={2}
+                sx={{
+                    mb: {
+                        sm: '1em',
+                        xs: '0.5em'
+                    }
+                }}
             >
                 <Autocomplete
                     disablePortal
-                    options={options}
+                    options={dishes.map((option: Dish) => ({name: option.name, id: option._id}))}
+                    getOptionLabel={(option) => option.name}
                     fullWidth   
                     renderInput={(params) => <TextField {...params} label="Dish Editing" color="secondary"/>}
                     value={selectedDish}
-                    onChange={(_event, newValue) => {setSelectedDish(newValue || options[0])}}
+                    onChange={(_event, newValue) => {setSelectedDish(newValue)}}
                     inputValue={autocompleteInputValue}
                     onInputChange={(_event, newInputValue) => {setAutocompleteInputValue(newInputValue)}}
-                    isOptionEqualToValue={(options, value) => options.valueOf === value.valueOf}
+                    isOptionEqualToValue={(options, value) => options.id.valueOf === value.id.valueOf}
+                    size={isMobile ? 'small' : 'medium'}
+                    sx={(theme) => ({
+                        '& input': {
+                            fontSize: {
+                                sm: theme.typography.body1.fontSize,
+                                xs: theme.typography.body2.fontSize
+                            }
+                        }
+                    })}
                 />
             </Grid>
 
             {/* Dish Name */}
             <Grid
+                container
                 item
                 xs={12}
+                spacing={2}
+                sx={{
+                    mb: {
+                        sm: '1em',
+                        xs: '0.5em'
+                    }
+                }}
             >
-                <TextField
-                    error={isDishAlreadyExist}
-                    helperText={isDishAlreadyExist ? 'Dish already exists.' : ''}
-                    fullWidth 
-                    label='Dish Name'
-                    color="secondary"
-                    value={foodName}
-                    onChange={(e) => setDishName(e.target.value)}
-                />
+                <Grid
+                    item
+                    sm={8}
+                    xs={7}
+                >
+                    <TextField
+                        error={isDishAlreadyExist}
+                        helperText={isDishAlreadyExist ? 'Dish already exists.' : ''}
+                        fullWidth
+                        label='Dish Name'
+                        color="secondary"
+                        value={foodName}
+                        onChange={(e) => setDishName(e.target.value)}
+                        size={isMobile ? 'small' : 'medium'}
+                        sx={(theme) => ({
+                            '& input': {
+                                fontSize: {
+                                    sm: theme.typography.body1.fontSize,
+                                    xs: theme.typography.body2.fontSize
+                                }
+                            }
+                        })}
+                    />
+                </Grid>
+                <Grid
+                    item
+                    sm={4}
+                    xs={5}
+                >
+                    <TextField
+                        fullWidth
+                        label='Default Serving'
+                        color="secondary"
+                        value={defaultServing}
+                        onChange={(e) => setDefaultServing(parseInt(e.target.value))}
+                        size={isMobile ? 'small' : 'medium'}
+                        sx={(theme) => ({
+                            '& input': {
+                                fontSize: {
+                                    sm: theme.typography.body1.fontSize,
+                                    xs: theme.typography.body2.fontSize
+                                }
+                            }
+                        })}
+                    />
+                </Grid>
             </Grid>
 
             {/* Rendering of Dish Foods */}
             {
-                dishData.map((food: DishFoodInterface, index: number) => (
+                dishData.map((food: DishFood, index: number) => (
                     <Grid
                         key={index + refreshTrigger}
                         item
@@ -132,54 +221,46 @@ function EditDishForm(props: EditDishFormProps) {
                     >
                         <Grid
                             item
-                            xs={1}
-                            display={'flex'}
-                            justifyContent={'center'}>  
-                            <IconButton
-                                color="error"
-                                onClick={() => handleRemoveButtonOnClick(index)}
-                            >
-                                <RemoveCircleIcon />
-                            </IconButton>
-                        </Grid>
+                            sm={1} 
+                            xs={0}
+                        />
                         <Grid
                             item
-                            xs={11}
+                            sm={11}
+                            xs={12}
                             columnGap={2}
                             display={'flex'}
                         >   
                             <EditDishFormFoodRowTextField 
-                                foods={props.foods}  
-                                foodInitialValue={food.food}
+                                foodID={food.foodID}
                                 defaultServingInitialValue={food.defaultServing}
                                 index={index}
-                                dishData={dishData}
                                 setDishData={setDishData}
                             />
                         </Grid>
                     </Grid>
                 ))
             }
-
-            {/* Add Food TextField Button */}
-            <Button 
-                fullWidth
-                color="secondary"
-                variant="contained"
-                onClick={() => setDishData([...dishData, {food: '', defaultServing: 1}])}
-                sx={{
-                    mt: '1em'
-                }}
-            >
-                <AddCircleIcon 
-                    fontSize="medium"
-                />
-            </Button>
-
+                
+            {/* Buttons */}
             <EditFoodDishButtons 
                 isLoading={isLoading}
+                disabled={!selectedDish}
                 handleUpdate={handleUpdate}
+                setIsDeleteDialogOpen={setIsDeleteDialogOpen}
             />
+
+            {/* Delete Dialog */}
+            {
+                !selectedDish ? null : 
+                <EditFoodDishDeleteAlertDialog
+                    foodDishToDelete={selectedDish.name}
+                    open={isDeleteDialogOpen}
+                    setOpen={setIsDeleteDialogOpen}
+                    handleDelete={handleDelete} 
+                />
+            }
+            
         </>
     )
 }

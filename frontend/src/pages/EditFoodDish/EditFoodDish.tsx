@@ -1,54 +1,27 @@
-import { FormControl, Grid, InputLabel, MenuItem, Select } from "@mui/material";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { FormControl, Grid, InputLabel, MenuItem, Select, useMediaQuery, useTheme } from "@mui/material";
+import { useContext, useState } from "react";
 import Header from "../../components/Header";
-import { DishInterface, FoodInterface } from "../../Interface";
-import axios from "axios";
 import EditFoodForm from "./EditFoodForm";
 import EditDishForm from "./EditDishForm";
+import { checkAuth } from "../../utils/checkAuth";
+import { UserDataContext } from "../../context/UserDataContext";
+import { Loading } from "../../components/Loading";
 
-interface CreateFoodInterface {
-    userName: string,
-    isDataPresent: boolean,
-    getAndHandleUserData: () => void,
-    foods: FoodInterface[],
-    dishes: DishInterface[]
-}
-
-function EditFoodDish(props: CreateFoodInterface) {
-    const navigate = useNavigate()
+function EditFoodDish() {
+    const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
+    // Check if user is authenticated
+    if (!checkAuth()) return
 
     const [category, setCategory] = useState('Food')
 
-    // Check if user is authenticated
-    useEffect(() => {
-        async function checkAuth() {
-            try {
-                const res = await axios.post('/api/authenticate')
-    
-                if (res.status !== 200) {
-                    navigate('/login')
-                }
-            } catch (error) {
-                console.log(error)
-                navigate('/login')
-                return
-            }
-        }
-
-        checkAuth()
-    }, [])
-
-    // Get user data
-    useEffect(() => {
-        if (!props.isDataPresent) {
-            navigate('/dashboard')
-        }
-    })
+    const {
+        isFetchingData
+    } = useContext(UserDataContext)
 
     return (
+        isFetchingData ? <Loading /> :
         <>
-            <Header userName={props.userName}/>
+            <Header />
             
             <Grid
                 container
@@ -81,6 +54,15 @@ function EditFoodDish(props: CreateFoodInterface) {
                             value={category}
                             label="Category"
                             onChange={(e) => setCategory(e.target.value)}
+                            size={isMobile ? 'small' : 'medium'}
+                            sx={(theme) => ({
+                                '& input': {
+                                    fontSize: {
+                                        sm: theme.typography.body1.fontSize,
+                                        xs: theme.typography.body2.fontSize
+                                    }
+                                }
+                            })}
                         >
                             <MenuItem value={'Food'}>Food</MenuItem>
                             <MenuItem value={'Dish'}>Dish</MenuItem>
@@ -88,18 +70,7 @@ function EditFoodDish(props: CreateFoodInterface) {
                     </FormControl>
                 </Grid>
 
-                {
-                    category === 'Food' ? 
-                        <EditFoodForm
-                            getAndHandleUserData={props.getAndHandleUserData}
-                            foods={props.foods}
-                        /> : 
-                        <EditDishForm
-                            getAndHandleUserData={props.getAndHandleUserData}
-                            foods={props.foods}
-                            dishes={props.dishes}
-                        />
-                }
+                { category === 'Food' ? <EditFoodForm /> : <EditDishForm /> }
             </Grid>
         </>
     )

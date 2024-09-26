@@ -18,7 +18,7 @@ function AddFoodDishButtons({ isLoading, handleAddFoodOrDish }: AddFoodDishButto
             xs={12}
             display={'flex'}
             justifyContent={'space-between'}
-            mt={'1em'}
+            mt={2}
         >
             <Box>
                 <LoadingButton 

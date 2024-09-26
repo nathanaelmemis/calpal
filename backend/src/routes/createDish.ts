@@ -18,7 +18,7 @@ export async function createDish(req: Request, res: Response) {
             defaultServing: 0,
             foods: [
                 {
-                    food: "", 
+                    foodID: "", 
                     defaultServing: 0
                 },
             ]

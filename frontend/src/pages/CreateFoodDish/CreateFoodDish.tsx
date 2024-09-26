@@ -1,54 +1,28 @@
 import { FormControl, Grid, InputLabel, MenuItem, Select, useMediaQuery, useTheme } from "@mui/material";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useContext, useState } from "react";
 import Header from "../../components/Header";
 import CreateFoodForm from "./CreateFoodForm";
-import { FoodInterface } from "../../Interface";
-import CreateDishForm from "./CreateDishForm";
-import axios from "axios";
+import { CreateDishForm } from "./CreateDishForm";
+import { checkAuth } from "../../utils/checkAuth";
+import { UserDataContext } from "../../context/UserDataContext";
+import { Loading } from "../../components/Loading";
 
-interface CreateFoodInterface {
-    userName: string,
-    isDataPresent: boolean,
-    getAndHandleUserData: Function,
-    foods: FoodInterface[],
-}
+export function CreateFoodDish() {
+    // Check if user is authenticated
+    if (!checkAuth()) return
 
-function CreateFoodDish({ userName, isDataPresent, getAndHandleUserData, foods }: CreateFoodInterface) {
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
-    const navigate = useNavigate()
+
+    const {
+        isFetchingData,
+    } = useContext(UserDataContext)
 
     const [category, setCategory] = useState('Food')
 
-    // Check if user is authenticated
-    useEffect(() => {
-        async function checkAuth() {
-            try {
-                const res = await axios.post('/api/authenticate')
-    
-                if (res.status !== 200) {
-                    navigate('/login')
-                }
-            } catch (error) {
-                console.log(error)
-                navigate('/login')
-                return
-            }
-        }
-
-        checkAuth()
-    }, [])
-
-    // Get user data
-    useEffect(() => {
-        if (!isDataPresent) {
-            navigate('/dashboard')
-        }
-    })
-
     return (
+        isFetchingData ? <Loading /> :
         <>
-            <Header userName={userName}/>
+            <Header />
             
             <Grid
                 container
@@ -92,19 +66,8 @@ function CreateFoodDish({ userName, isDataPresent, getAndHandleUserData, foods }
                     </FormControl>
                 </Grid>
 
-                {
-                    category === 'Food' ? 
-                        <CreateFoodForm
-                            getAndHandleUserData={getAndHandleUserData}   
-                        /> : 
-                        <CreateDishForm 
-                            foods={foods}
-                            getAndHandleUserData={getAndHandleUserData}
-                        />
-                }
+                { category === 'Food' ? <CreateFoodForm /> : <CreateDishForm /> }
             </Grid>
         </>
     )
 }
-
-export default CreateFoodDish;
