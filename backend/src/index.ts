@@ -57,6 +57,17 @@ app.delete('/deleteAccount', cookieJwtAuth, deleteAccount)
 app.delete('/deleteFoodDish', cookieJwtAuth, deleteFoodDish)
 app.delete('/deleteFoodDishEaten', cookieJwtAuth, deleteFoodDishEaten)
 
+// Easter eggs
+app.get('/ping', (req, res) => {
+    res.send("pong 🏓")
+})
+
+// Route not found
+app.use((req, res, next) => { 
+    res.status(404).send( 
+        "Are you trying to DOS me? Please don't. 🥺👉👈") 
+}) 
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 })

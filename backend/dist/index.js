@@ -49,6 +49,14 @@ app.put('/updateDishEaten', cookieJwtAuth_1.cookieJwtAuth, updateDishEaten_1.upd
 app.delete('/deleteAccount', cookieJwtAuth_1.cookieJwtAuth, deleteAccount_1.deleteAccount);
 app.delete('/deleteFoodDish', cookieJwtAuth_1.cookieJwtAuth, deleteFoodDish_1.deleteFoodDish);
 app.delete('/deleteFoodDishEaten', cookieJwtAuth_1.cookieJwtAuth, deleteFoodDishEaten_1.deleteFoodDishEaten);
+// Easter eggs
+app.get('/ping', (req, res) => {
+    res.send("pong 🏓");
+});
+// Route not found
+app.use((req, res, next) => {
+    res.status(404).send("Are you trying to DOS me? Please don't. 🥺👉👈");
+});
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
