@@ -5,9 +5,10 @@ interface EmailTextFieldProps {
     email: string
     setEmail: Function
     error?: boolean
+    variant?: 'standard' | 'outlined' | 'filled'
 }
 
-export function EmailTextField({ email, setEmail, error = false }: EmailTextFieldProps) {
+export function EmailTextField({ email, setEmail, error = false, variant }: EmailTextFieldProps) {
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     
     const [isInvalidEmail, setIsInvalidEmail] = useState(false)
@@ -28,7 +29,7 @@ export function EmailTextField({ email, setEmail, error = false }: EmailTextFiel
         <TextField
             label={isInvalidEmail || error ? 'Invalid Email' : "Email"}
             type="email"
-            variant="outlined"
+            variant={variant ?? "outlined"}
             color="secondary"
             fullWidth
             required

@@ -21,6 +21,8 @@ import { register } from "./routes/register";
 import { logout } from "./routes/logout";
 import { changePassword } from "./routes/changePassword";
 import { deleteFoodDish } from "./routes/deleteFoodDish";
+import { deleteAccount } from "./routes/deleteAccount";
+import { getSalt } from "./routes/getSalt";
 
 const app: Express = express();
 app.use(express.json());
@@ -32,6 +34,7 @@ app.post("/authenticate", cookieJwtAuth, authenticate)
 app.post("/login", login)
 app.post("/register", register)
 
+app.get('/getSalt', getSalt)
 app.get('/getUserData', cookieJwtAuth, getUserData)
 
 app.post("/logout", logout)
@@ -50,24 +53,12 @@ app.post('/updateDish', cookieJwtAuth, updateDish)
 app.put('/updateFoodEaten', cookieJwtAuth, updateFoodEaten)
 app.put('/updateDishEaten', cookieJwtAuth, updateDishEaten)
 
+app.delete('/deleteAccount', cookieJwtAuth, deleteAccount)
 app.delete('/deleteFoodDish', cookieJwtAuth, deleteFoodDish)
 app.delete('/deleteFoodDishEaten', cookieJwtAuth, deleteFoodDishEaten)
 
-async function mongoDBTestConnect() {
-    try {
-        // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
-        // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
-        app.listen(port, () => {
-            console.log(`Server is running on port ${port}`);
-        })
-    } finally {
-        // Ensures that the client will close when you finish/error
-        await client.close();
-    }
-}
-mongoDBTestConnect().catch(console.dir);
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+})
 
 module.exports = app;

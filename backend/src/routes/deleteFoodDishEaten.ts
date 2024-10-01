@@ -42,7 +42,7 @@ export async function deleteFoodDishEaten(req: Request, res: Response) {
         
         routeLog(req, `Food/Dish Eaten deleted: ${userID} ${foodDishEatenID}`)
 
-        res.status(200).send(result.deletedCount)
+        res.sendStatus(200)
     } catch (error: any) {
         routeLog(req, error.message)
         res.status(500).send(error)

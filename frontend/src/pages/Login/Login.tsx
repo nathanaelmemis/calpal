@@ -1,5 +1,5 @@
 import { LoadingButton } from '@mui/lab';
-import { Alert, Box, Fade, Grid, Stack, TextField, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Alert, Box, Checkbox, Fade, FormControlLabel, FormGroup, Grid, Stack, TextField, Typography, useMediaQuery, useTheme } from "@mui/material";
 
 import { useContext, useState } from "react";
 
@@ -25,6 +25,7 @@ export function Login() {
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [rememberMe, setRememberMe] = useState(false)
 
     const [isLoading, setIsLoading] = useState(false)
     const [isFailedLogin, setIsFailedLogin] = useState(false)
@@ -44,9 +45,16 @@ export function Login() {
         }
 
         try {
+            const getSaltRes = await axios.get('/api/getSalt', {
+                params: {
+                    email: email
+                }
+            })
+
             const res = await axios.post('/api/login', {
                 email: email,
-                hash: CryptoJS.SHA256(email+password).toString(CryptoJS.enc.Hex)
+                hash: CryptoJS.PBKDF2(password, getSaltRes.data.salt, { keySize: 256, iterations: 1883 }).toString(CryptoJS.enc.Hex),
+                rememberMe: rememberMe
             })
 
             if (res.status === 200) {
@@ -151,6 +159,24 @@ export function Login() {
                                 },
                             })}
                         />
+
+                        <Box 
+                            display={'flex'}
+                        >
+                            <FormGroup>
+                                <FormControlLabel 
+                                    label="Remember Me"
+                                    control={
+                                        <Checkbox
+                                            checked={rememberMe}
+                                            onChange={(e) => setRememberMe(e.target.checked)}
+                                            color="secondary"
+                                            size={isMobile ? 'small' : 'medium'}
+                                        /> 
+                                    }
+                                />
+                            </FormGroup>
+                        </Box>
 
                         <LoadingButton
                             color="secondary"

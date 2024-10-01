@@ -1,5 +1,5 @@
 import { Grid, TextField } from "@mui/material"
-import { useState, useEffect, useContext } from "react"
+import { useState, useEffect, useContext, ReactElement } from "react"
 import { Dish } from "../../interfaces/dish"
 import { DishFood } from "../../interfaces/dishFood"
 import { UserDataContext } from "../../context/UserDataContext"
@@ -14,7 +14,7 @@ interface DishfoodListProps {
 }
 
 export function DishFoodList(props: DishfoodListProps) {
-    const [renderedList, setRenderedList]: [Element[], Function] = useState([])
+    const [renderedList, setRenderedList] = useState<ReactElement[]>([])
 
     const {
         foods,

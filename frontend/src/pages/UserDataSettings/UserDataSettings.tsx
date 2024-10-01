@@ -6,6 +6,7 @@ import axios from "axios"
 import { LoadingButton } from "@mui/lab"
 import { UserDataContext } from "../../context/UserDataContext"
 import { checkAuth } from "../../utils/checkAuth"
+import { DeleteAccountCard } from "./DeleteAccountCard"
 
 export function UserDataSettings() {
     // Check if user is authenticated
@@ -69,6 +70,7 @@ export function UserDataSettings() {
                 bgcolor={'primary.main'}
                 p={'1em'}
                 gap={2}
+                mb={isMobile ? '1.25em' : '2em'}
                 sx={{
                     boxShadow: 5,
                     borderRadius: 5
@@ -324,7 +326,7 @@ export function UserDataSettings() {
                 >
                     <Button
                         variant="contained"
-                        color="error"
+                        color="secondary"
                         sx={{ mr: 2 }}
                         onClick={() => navigate('/dashboard')}
                         size={isMobile ? 'small' : 'medium'}
@@ -341,7 +343,13 @@ export function UserDataSettings() {
                         Save
                     </LoadingButton>
                 </Grid>
+
             </Grid>
+
+            <DeleteAccountCard 
+                isLoading={isLoading}
+                setIsLoading={setIsLoading}
+            />
         </>
     )
 }

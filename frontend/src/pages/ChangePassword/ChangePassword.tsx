@@ -29,6 +29,7 @@ export function ChangePassword() {
     const [isRewritePasswordIncorrect, setIsRewritePasswordIncorrect] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [isInvalidCredentials, setIsInvalidCredentials] = useState(false)
+    const [isNewPasswordShort, setIsNewPasswordShort] = useState(false)
 
     function handleChangeRewritePassword(newValue: string) {
         setReEnterNewPassword(newValue)
@@ -46,7 +47,7 @@ export function ChangePassword() {
         setPassword(newValue)
     }
 
-    function handleConfirm() {
+    async function handleConfirm() {
         setIsLoading(true)
 
         if (isRewritePasswordIncorrect) {
@@ -54,22 +55,36 @@ export function ChangePassword() {
             return
         }
 
-        axios.post('/api/changePassword', {
-            email: email,
-            hash: CryptoJS.SHA256(email+password).toString(CryptoJS.enc.Hex),
-            newHash: CryptoJS.SHA256(email+newPassword).toString(CryptoJS.enc.Hex),
-        })
-        .then(() => {
+        if (newPassword.length < 8) {
+            setIsNewPasswordShort(true)
+            setIsLoading(false)
+            return
+        }
+
+        try {
+            const getSaltRes = await axios.get('/api/getSalt', {
+                params: {
+                    email: email
+                }
+            })
+    
+            const newSalt = CryptoJS.lib.WordArray.random(256).toString(CryptoJS.enc.Hex)
+    
+            await axios.post('/api/changePassword', {
+                email: email,
+                hash: CryptoJS.PBKDF2(password, getSaltRes.data.salt, { keySize: 256, iterations: 1883 }).toString(CryptoJS.enc.Hex),
+                newSalt: newSalt,
+                newHash: CryptoJS.PBKDF2(newPassword, newSalt, { keySize: 256, iterations: 1883 }).toString(CryptoJS.enc.Hex)
+            })
+
             navigate('/login')
-        })
-        .catch((error) => {
+        } catch (error: any) {
             if (error.response.status === 400) {
                 setIsInvalidCredentials(true)
             }
-        })
-        .finally(() => {
-            setIsLoading(false)
-        })
+        }
+
+        setIsLoading(false)
     }
 
     return (
@@ -114,6 +129,7 @@ export function ChangePassword() {
                         error={isInvalidCredentials}
                     />
                     <TextField 
+                        required
                         error={isInvalidCredentials}
                         color="secondary"
                         label={isInvalidCredentials ? 'Invalid Password' : 'Old Password'}
@@ -127,8 +143,10 @@ export function ChangePassword() {
                         })}
                     />
                     <TextField 
+                        error={isNewPasswordShort}
+                        required
                         color="secondary"
-                        label={'New Password'}
+                        label={isNewPasswordShort ? 'Password must be at least 8 characters long' : 'New Password'}
                         value={newPassword}
                         fullWidth
                         type="password"
@@ -139,6 +157,7 @@ export function ChangePassword() {
                         })}
                     />
                     <TextField 
+                        required
                         error={isRewritePasswordIncorrect}
                         color="secondary"
                         label={isRewritePasswordIncorrect ? 'Incorrect Input' : 'Re-enter New Password'}

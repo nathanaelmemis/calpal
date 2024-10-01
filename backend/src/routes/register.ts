@@ -1,6 +1,4 @@
 import { client } from "../database"
-const jwt = require("jsonwebtoken")
-import CryptoJS from "crypto-js"
 import dotenv from "dotenv"
 
 import {Request, Response} from 'express'
@@ -13,6 +11,7 @@ export async function register (req: Request, res: Response) {
         await client.connect()
 
         const data = req.body
+        data.lastFailedAttempt = new Date()
 
         const emailAlreadyUsed = await client.db("CalPal").collection("users").findOne({ email: data.email })
 
@@ -21,9 +20,13 @@ export async function register (req: Request, res: Response) {
             return
         }
 
-        const signedHash = CryptoJS.SHA256(data.hash + process.env.SECRET_KEY).toString(CryptoJS.enc.Hex)
-
-        const usersResult = await client.db("CalPal").collection("users").insertOne({ email: data.email, hash: signedHash })
+        const usersResult = await client.db("CalPal").collection("users").insertOne({ 
+            email: data.email, 
+            salt: data.salt, 
+            hash: data.hash, 
+            loginAttempt: 0,
+            lastFailedAttempt: data.lastFailedAttempt,
+        })
 
         if (!usersResult.insertedId) {
             throw new Error('Failed to register account.')

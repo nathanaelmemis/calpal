@@ -19,7 +19,8 @@ export async function changePassword (req: Request, res: Response) {
             userID: "string",
             email: "",
             hash: "",
-            newHash: ""
+            newSalt: "",
+            newHash: "",
         }
         if (!validateData(req, res, data, schema)) {
             return
@@ -27,24 +28,21 @@ export async function changePassword (req: Request, res: Response) {
 
         routeLog(req, `Changing Password: ${data.userID}`)
 
-        const signedHash = CryptoJS.SHA256(data.hash + process.env.SECRET_KEY).toString(CryptoJS.enc.Hex)
-
-        const user = await client.db("CalPal").collection("users").findOne({ email: data.email, hash: signedHash })
+        const user = await client.db("CalPal").collection("users").findOne({ email: data.email, hash: data.hash })
 
         if (!user) {
-            routeLog(req, `Invalid Credentials: ${data.email} ${signedHash}`)
+            routeLog(req, `Invalid Credentials: ${data.email}`)
             res.status(400).send("Invalid Credentials.")
             return
         }
 
-        const signedNewHash = CryptoJS.SHA256(data.newHash + process.env.SECRET_KEY).toString(CryptoJS.enc.Hex)
-
         const result = await client.db("CalPal").collection("users").updateOne({
             email: data.email,
-            hash: signedHash
+            hash: data.hash
         }, {
             $set: {
-                hash: signedNewHash
+                salt: data.newSalt,
+                hash: data.newHash
             }
         })
 

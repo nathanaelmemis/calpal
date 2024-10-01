@@ -48,11 +48,21 @@ export function Register() {
             return
         }
 
+        if (password.length < 8) {
+            setIsFailedRegistration(true)
+            setErrorMessage('Password must be at least 8 characters long.')
+            setIsLoading(false)
+            return
+        }
+
         try {
+            const salt = CryptoJS.lib.WordArray.random(256).toString(CryptoJS.enc.Hex)
+
             const res = await axios.post('/api/register', {
                 name: name,
                 email: email,
-                hash: CryptoJS.SHA256(email+password).toString(CryptoJS.enc.Hex)
+                salt: salt,
+                hash: CryptoJS.PBKDF2(password, salt, { keySize: 256, iterations: 1883 }).toString(CryptoJS.enc.Hex)
             })
 
             if (res.status === 200) {

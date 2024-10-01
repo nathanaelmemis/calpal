@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken"
 import dotenv from 'dotenv'
 import { routeLog } from "../utils";
 
@@ -14,7 +14,7 @@ export function cookieJwtAuth(req: Request, res: Response, next: NextFunction) {
             throw new Error("No cookie token.");
         }
 
-        const decoded = jwt.verify(userToken, process.env.SECRET_KEY);
+        const decoded = jwt.verify(userToken, process.env.SECRET_KEY || '') as {userID: string, email: string};
         req.body.userID = decoded.userID;
         next();
     } catch(error: any) {
