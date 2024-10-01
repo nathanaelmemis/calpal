@@ -14,8 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.register = register;
 const database_1 = require("../database");
-const jwt = require("jsonwebtoken");
-const crypto_js_1 = __importDefault(require("crypto-js"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const utils_1 = require("../utils");
 dotenv_1.default.config();
@@ -24,13 +22,19 @@ function register(req, res) {
         try {
             yield database_1.client.connect();
             const data = req.body;
+            data.lastFailedAttempt = new Date();
             const emailAlreadyUsed = yield database_1.client.db("CalPal").collection("users").findOne({ email: data.email });
             if (emailAlreadyUsed) {
                 res.status(400).send("Email already used.");
                 return;
             }
-            const signedHash = crypto_js_1.default.SHA256(data.hash + process.env.SECRET_KEY).toString(crypto_js_1.default.enc.Hex);
-            const usersResult = yield database_1.client.db("CalPal").collection("users").insertOne({ email: data.email, hash: signedHash });
+            const usersResult = yield database_1.client.db("CalPal").collection("users").insertOne({
+                email: data.email,
+                salt: data.salt,
+                hash: data.hash,
+                loginAttempt: 0,
+                lastFailedAttempt: data.lastFailedAttempt,
+            });
             if (!usersResult.insertedId) {
                 throw new Error('Failed to register account.');
             }

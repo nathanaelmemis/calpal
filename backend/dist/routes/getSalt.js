@@ -8,56 +8,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changePassword = changePassword;
+exports.getSalt = getSalt;
 const database_1 = require("../database");
-const utils_1 = require("../utils");
 const jwt = require("jsonwebtoken");
-const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
-function changePassword(req, res) {
+const utils_1 = require("../utils");
+function getSalt(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             yield database_1.client.connect();
-            const data = req.body;
+            const data = req.query;
             // Data Validation  
             const schema = {
-                userID: "string",
-                email: "",
-                hash: "",
-                newSalt: "",
-                newHash: "",
+                email: ""
             };
             if (!(0, utils_1.validateData)(req, res, data, schema)) {
                 return;
             }
-            (0, utils_1.routeLog)(req, `Changing Password: ${data.userID}`);
-            const user = yield database_1.client.db("CalPal").collection("users").findOne({ email: data.email, hash: data.hash });
+            const user = yield database_1.client.db("CalPal").collection("users").findOne({ email: data.email });
             if (!user) {
                 (0, utils_1.routeLog)(req, `Invalid Credentials: ${data.email}`);
-                res.status(400).send("Invalid Credentials.");
+                res.status(404).send("Invalid Credentials.");
                 return;
             }
-            const result = yield database_1.client.db("CalPal").collection("users").updateOne({
-                email: data.email,
-                hash: data.hash
-            }, {
-                $set: {
-                    salt: data.newSalt,
-                    hash: data.newHash
-                }
-            });
-            if (!result.matchedCount) {
-                (0, utils_1.routeLog)(req, `Failed to change password: ${data.userID}`);
-                res.status(400).send("Failed to change password.");
-                return;
-            }
-            (0, utils_1.routeLog)(req, `Password Changed: ${data.userID}`);
-            res.clearCookie("userToken");
-            res.status(200).send("Password Changed.");
+            (0, utils_1.routeLog)(req, `Salt Retrieved: ${user.email}`);
+            res.status(200).send({ salt: user.salt });
         }
         catch (error) {
             (0, utils_1.routeLog)(req, error.message);

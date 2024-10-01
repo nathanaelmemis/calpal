@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.cookieJwtAuth = cookieJwtAuth;
-const jwt = require("jsonwebtoken");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const utils_1 = require("../utils");
 dotenv_1.default.config();
@@ -14,7 +14,7 @@ function cookieJwtAuth(req, res, next) {
         if (!userToken) {
             throw new Error("No cookie token.");
         }
-        const decoded = jwt.verify(userToken, process.env.SECRET_KEY);
+        const decoded = jsonwebtoken_1.default.verify(userToken, process.env.SECRET_KEY || '');
         req.body.userID = decoded.userID;
         next();
     }

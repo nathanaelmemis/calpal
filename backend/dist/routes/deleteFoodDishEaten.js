@@ -47,7 +47,7 @@ function deleteFoodDishEaten(req, res) {
                 throw new Error(`Failed To Delete Food/Dish Eaten: ${userID} ${foodDishEatenID}`);
             }
             (0, utils_1.routeLog)(req, `Food/Dish Eaten deleted: ${userID} ${foodDishEatenID}`);
-            res.status(200).send(result.deletedCount);
+            res.sendStatus(200);
         }
         catch (error) {
             (0, utils_1.routeLog)(req, error.message);
