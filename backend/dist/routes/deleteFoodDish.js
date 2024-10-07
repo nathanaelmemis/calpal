@@ -75,8 +75,10 @@ function deleteFoodDish(req, res) {
                 const dishesUpdateResult = yield database_1.client.db("CalPal").collection("dishes").updateMany({ userID: userID }, { $pull: { foods: { foodID: foodDishEatenID } } });
                 (0, utils_1.routeLog)(req, `Dishes Updated: ${dishesUpdateResult.modifiedCount}`);
                 // update all dishEaten that contain the food using the indices
-                const dishEatenUpdateResult = yield database_1.client.db("CalPal").collection("dishEaten").bulkWrite(dishesToUpdateData);
-                (0, utils_1.routeLog)(req, `DishEaten Updated: ${dishEatenUpdateResult.modifiedCount}`);
+                if (dishesToUpdateData.length > 0) {
+                    const dishEatenUpdateResult = yield database_1.client.db("CalPal").collection("dishEaten").bulkWrite(dishesToUpdateData);
+                    (0, utils_1.routeLog)(req, `DishEaten Updated: ${dishEatenUpdateResult.modifiedCount}`);
+                }
                 // delete the food from the foods collection
                 result = yield database_1.client.db("CalPal").collection("foods").deleteOne({
                     _id: new mongodb_1.ObjectId(foodDishEatenID),
@@ -89,7 +91,6 @@ function deleteFoodDish(req, res) {
             }
             (0, utils_1.routeLog)(req, `Food/Dish Eaten deleted: ${userID} ${foodDishEatenID}`);
             res.sendStatus(200);
-            // res.status(200).send(result.deletedCount)
         }
         catch (error) {
             (0, utils_1.routeLog)(req, error.message);
