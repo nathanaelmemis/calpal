@@ -77,7 +77,7 @@ export async function deleteFoodDish(req: Request, res: Response) {
             routeLog(req, `Dishes Updated: ${dishesUpdateResult.modifiedCount}`)
 
             // update all dishEaten that contain the food using the indices
-            if (dishesToUpdate.length > 0) {
+            if (dishesToUpdateData.length > 0) {
                 const dishEatenUpdateResult = await client.db("CalPal").collection("dishEaten").bulkWrite(dishesToUpdateData)
                 
                 routeLog(req, `DishEaten Updated: ${dishEatenUpdateResult.modifiedCount}`)
@@ -99,7 +99,6 @@ export async function deleteFoodDish(req: Request, res: Response) {
         routeLog(req, `Food/Dish Eaten deleted: ${userID} ${foodDishEatenID}`)
 
         res.sendStatus(200)
-        // res.status(200).send(result.deletedCount)
     } catch (error: any) {
         routeLog(req, error.message)
         res.status(500).send(error)
