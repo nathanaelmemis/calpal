@@ -72,7 +72,7 @@ function EditDishForm() {
             })
 
             if (res.status === 200) {
-                await getData(['dishes'])
+                await getData(['dishes', 'dishEaten'])
             }
         } catch (error: any) {
             if (error.response.data === 'Dish already exists.') {
@@ -97,13 +97,13 @@ function EditDishForm() {
         try {
             const res = await axios.delete('/api/deleteFoodDish', {
                 data: {
-                    foodDishEatenID: selectedDish.id,
+                    foodDishID: selectedDish.id,
                     isDish: true
                 }
             })
 
             if (res.status === 200) {
-                await getData(['dishes'])
+                await getData(['dishes', 'dishEaten'])
             }
         } catch (error) {
             console.log(error)

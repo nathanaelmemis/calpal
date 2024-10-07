@@ -10,24 +10,24 @@ export async function deleteFoodDish(req: Request, res: Response) {
 
         const data = req.body
         const userID = data.userID
-        const foodDishEatenID: string = data.foodDishEatenID
+        const foodDishID: string = data.foodDishID
 
         // Data Validation
         const schema = {
             userID: "",
-            foodDishEatenID: "",
+            foodDishID: "",
             isDish: true,
         }
         if (!validateData(req, res, data, schema)) {
             return
         }
 
-        routeLog(req, `Deleting Food/Dish: ${userID} ${foodDishEatenID}`)
+        routeLog(req, `Deleting Food/Dish: ${userID} ${foodDishID}`)
 
         let result = null
         if (data.isDish) {
             result = await client.db("CalPal").collection("dishes").deleteOne({
-                _id: new ObjectId(foodDishEatenID),
+                _id: new ObjectId(foodDishID),
                 userID: userID
             })
         } else {
@@ -42,12 +42,12 @@ export async function deleteFoodDish(req: Request, res: Response) {
                 .db("CalPal").collection("dishes")
                 .find<Dish>({ 
                     userID: userID, 
-                    'foods.foodID': foodDishEatenID
+                    'foods.foodID': foodDishID
                 }).toArray()
 
             // get the indices of the dishes.foods that contain the food
             const dishesToUpdateData = dishesToUpdate.map((dish) => {
-                const foodIndex = dish.foods.findIndex((dishFood) => dishFood.foodID === foodDishEatenID)
+                const foodIndex = dish.foods.findIndex((dishFood) => dishFood.foodID === foodDishID)
                 return {
                     updateMany: {
                         'filter': { userID: userID, dishID: dish._id.toString() },
@@ -71,7 +71,7 @@ export async function deleteFoodDish(req: Request, res: Response) {
             // update all dishes that contain the food
             const dishesUpdateResult = await client.db("CalPal").collection<Dish>("dishes").updateMany(
                 { userID: userID },
-                { $pull: { foods: { foodID: foodDishEatenID } } }
+                { $pull: { foods: { foodID: foodDishID } } }
             )
 
             routeLog(req, `Dishes Updated: ${dishesUpdateResult.modifiedCount}`)
@@ -80,12 +80,20 @@ export async function deleteFoodDish(req: Request, res: Response) {
             if (dishesToUpdateData.length > 0) {
                 const dishEatenUpdateResult = await client.db("CalPal").collection("dishEaten").bulkWrite(dishesToUpdateData)
                 
-                routeLog(req, `DishEaten Updated: ${dishEatenUpdateResult.modifiedCount}`)
+                routeLog(req, `Dish Eaten Updated: ${dishEatenUpdateResult.modifiedCount}`)
             }
+
+            // delete food from foodEaten
+            const foodEatenUpdateResult = await client.db("CalPal").collection("foodEaten").deleteMany({
+                foodID: foodDishID,
+                userID: userID
+            })
+
+            routeLog(req, `Food Eaten Deleted: ${foodEatenUpdateResult.deletedCount}`)
 
             // delete the food from the foods collection
             result = await client.db("CalPal").collection("foods").deleteOne({
-                _id: new ObjectId(foodDishEatenID),
+                _id: new ObjectId(foodDishID),
                 userID: userID
             })
 
@@ -93,10 +101,10 @@ export async function deleteFoodDish(req: Request, res: Response) {
         }
 
         if (!result.deletedCount) {
-            throw new Error(`Failed To Delete Food/Dish Eaten: ${userID} ${foodDishEatenID}`)
+            throw new Error(`Failed To Delete Food/Dish Eaten: ${userID} ${foodDishID}`)
         }
         
-        routeLog(req, `Food/Dish Eaten deleted: ${userID} ${foodDishEatenID}`)
+        routeLog(req, `Food/Dish Eaten deleted: ${userID} ${foodDishID}`)
 
         res.sendStatus(200)
     } catch (error: any) {

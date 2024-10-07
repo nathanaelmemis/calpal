@@ -88,7 +88,7 @@ function EditFoodForm() {
             })
 
             if (res.status === 200) {
-                getData(['foods', 'dishes'])
+                getData(['foods', 'dishes', 'foodEaten', 'dishEaten'])
                 setSelectedFood(selectedFood)
             }
         } catch (error: any) {
@@ -114,13 +114,13 @@ function EditFoodForm() {
         try {
             const res = await axios.delete('/api/deleteFoodDish', {
                 data: {
-                    foodDishEatenID: selectedFood.id,
+                    foodDishID: selectedFood.id,
                     isDish: false
                 }
             })
 
             if (res.status === 200) {
-                await getData(['foods', 'dishes'])
+                await getData(['foods', 'dishes', 'foodEaten', 'dishEaten'])
                 setSelectedFood(selectedFood)
             }
         } catch (error) {

@@ -19,21 +19,21 @@ function deleteFoodDish(req, res) {
             yield database_1.client.connect();
             const data = req.body;
             const userID = data.userID;
-            const foodDishEatenID = data.foodDishEatenID;
+            const foodDishID = data.foodDishID;
             // Data Validation
             const schema = {
                 userID: "",
-                foodDishEatenID: "",
+                foodDishID: "",
                 isDish: true,
             };
             if (!(0, utils_1.validateData)(req, res, data, schema)) {
                 return;
             }
-            (0, utils_1.routeLog)(req, `Deleting Food/Dish: ${userID} ${foodDishEatenID}`);
+            (0, utils_1.routeLog)(req, `Deleting Food/Dish: ${userID} ${foodDishID}`);
             let result = null;
             if (data.isDish) {
                 result = yield database_1.client.db("CalPal").collection("dishes").deleteOne({
-                    _id: new mongodb_1.ObjectId(foodDishEatenID),
+                    _id: new mongodb_1.ObjectId(foodDishID),
                     userID: userID
                 });
             }
@@ -47,11 +47,11 @@ function deleteFoodDish(req, res) {
                     .db("CalPal").collection("dishes")
                     .find({
                     userID: userID,
-                    'foods.foodID': foodDishEatenID
+                    'foods.foodID': foodDishID
                 }).toArray();
                 // get the indices of the dishes.foods that contain the food
                 const dishesToUpdateData = dishesToUpdate.map((dish) => {
-                    const foodIndex = dish.foods.findIndex((dishFood) => dishFood.foodID === foodDishEatenID);
+                    const foodIndex = dish.foods.findIndex((dishFood) => dishFood.foodID === foodDishID);
                     return {
                         updateMany: {
                             'filter': { userID: userID, dishID: dish._id.toString() },
@@ -72,24 +72,30 @@ function deleteFoodDish(req, res) {
                     };
                 });
                 // update all dishes that contain the food
-                const dishesUpdateResult = yield database_1.client.db("CalPal").collection("dishes").updateMany({ userID: userID }, { $pull: { foods: { foodID: foodDishEatenID } } });
+                const dishesUpdateResult = yield database_1.client.db("CalPal").collection("dishes").updateMany({ userID: userID }, { $pull: { foods: { foodID: foodDishID } } });
                 (0, utils_1.routeLog)(req, `Dishes Updated: ${dishesUpdateResult.modifiedCount}`);
                 // update all dishEaten that contain the food using the indices
                 if (dishesToUpdateData.length > 0) {
                     const dishEatenUpdateResult = yield database_1.client.db("CalPal").collection("dishEaten").bulkWrite(dishesToUpdateData);
-                    (0, utils_1.routeLog)(req, `DishEaten Updated: ${dishEatenUpdateResult.modifiedCount}`);
+                    (0, utils_1.routeLog)(req, `Dish Eaten Updated: ${dishEatenUpdateResult.modifiedCount}`);
                 }
+                // delete food from foodEaten
+                const foodEatenUpdateResult = yield database_1.client.db("CalPal").collection("foodEaten").deleteMany({
+                    foodID: foodDishID,
+                    userID: userID
+                });
+                (0, utils_1.routeLog)(req, `Food Eaten Deleted: ${foodEatenUpdateResult.deletedCount}`);
                 // delete the food from the foods collection
                 result = yield database_1.client.db("CalPal").collection("foods").deleteOne({
-                    _id: new mongodb_1.ObjectId(foodDishEatenID),
+                    _id: new mongodb_1.ObjectId(foodDishID),
                     userID: userID
                 });
                 (0, utils_1.routeLog)(req, `Food Deleted: ${result.deletedCount}`);
             }
             if (!result.deletedCount) {
-                throw new Error(`Failed To Delete Food/Dish Eaten: ${userID} ${foodDishEatenID}`);
+                throw new Error(`Failed To Delete Food/Dish Eaten: ${userID} ${foodDishID}`);
             }
-            (0, utils_1.routeLog)(req, `Food/Dish Eaten deleted: ${userID} ${foodDishEatenID}`);
+            (0, utils_1.routeLog)(req, `Food/Dish Eaten deleted: ${userID} ${foodDishID}`);
             res.sendStatus(200);
         }
         catch (error) {
