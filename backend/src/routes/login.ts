@@ -7,6 +7,8 @@ import { validateData, routeLog } from "../utils"
 
 dotenv.config()
 
+const MAX_TOKEN_EXPIRATION = 2592000000
+
 export async function login (req: Request, res: Response) {
     try {
         await client.connect()
@@ -72,7 +74,7 @@ export async function login (req: Request, res: Response) {
         const userToken = jwt.sign({ userID: user._id, email: user.email }, process.env.SECRET_KEY || '', { expiresIn: data.rememberMe ? "30d" : "1d" })
 
         routeLog(req, `User Authenticated: ${user.email}`)
-        res.cookie("userToken", userToken, { httpOnly: true })
+        res.cookie("userToken", userToken, { expires: new Date(Date.now() + MAX_TOKEN_EXPIRATION) ,httpOnly: true })
         res.status(200).send("User Authenticated.")
     } catch(error: any) {
         routeLog(req, error.message)

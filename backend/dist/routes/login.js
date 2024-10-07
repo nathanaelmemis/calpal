@@ -18,6 +18,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const utils_1 = require("../utils");
 dotenv_1.default.config();
+const MAX_TOKEN_EXPIRATION = 2592000000;
 function login(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -72,7 +73,7 @@ function login(req, res) {
             });
             const userToken = jsonwebtoken_1.default.sign({ userID: user._id, email: user.email }, process.env.SECRET_KEY || '', { expiresIn: data.rememberMe ? "30d" : "1d" });
             (0, utils_1.routeLog)(req, `User Authenticated: ${user.email}`);
-            res.cookie("userToken", userToken, { httpOnly: true });
+            res.cookie("userToken", userToken, { expires: new Date(Date.now() + MAX_TOKEN_EXPIRATION), httpOnly: true });
             res.status(200).send("User Authenticated.");
         }
         catch (error) {
