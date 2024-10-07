@@ -12,10 +12,14 @@ import { Loading } from "../../components/Loading";
 import { checkAuth } from "../../utils/checkAuth";
 import { SelectedFoodDish } from "../../interfaces/selectedFoodDish";
 import { Macros } from "../../interfaces/macros";
+import { checkState } from "../../utils/checkState";
 
 function AddFoodDish() {
     // Check if user is authenticated
     if (!checkAuth()) return
+
+    // Check if state is lost
+    checkState()
     
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
 

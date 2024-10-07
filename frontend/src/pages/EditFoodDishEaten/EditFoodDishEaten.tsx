@@ -15,10 +15,14 @@ import { DishFoodList } from "./EditFoodDishFoodList";
 import { DeleteAlertDialog } from "./EditFoodDishDeleteAlertDialog";
 import { UserDataContext } from "../../context/UserDataContext";
 import { SelectedFoodDish } from "../../interfaces/selectedFoodDish";
+import { checkState } from "../../utils/checkState";
 
 export default function EditFoodDishEaten() {
     // Check if user is authenticated
     if (!checkAuth()) return
+
+    // Check if state is lost
+    checkState()
 
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate()

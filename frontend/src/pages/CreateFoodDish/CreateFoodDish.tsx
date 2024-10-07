@@ -6,10 +6,14 @@ import { CreateDishForm } from "./CreateDishForm";
 import { checkAuth } from "../../utils/checkAuth";
 import { UserDataContext } from "../../context/UserDataContext";
 import { Loading } from "../../components/Loading";
+import { checkState } from "../../utils/checkState";
 
 export function CreateFoodDish() {
     // Check if user is authenticated
     if (!checkAuth()) return
+
+    // Check if state is lost
+    checkState()
 
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
 

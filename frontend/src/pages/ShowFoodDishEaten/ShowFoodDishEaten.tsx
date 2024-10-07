@@ -8,6 +8,7 @@ import { DishEaten } from "../../interfaces/dishEaten";
 import { FoodEaten } from "../../interfaces/foodEaten";
 import { checkAuth } from "../../utils/checkAuth";
 import { UserDataContext } from "../../context/UserDataContext";
+import { checkState } from "../../utils/checkState";
 
 interface ConcatenatedFoodDishEaten{
     id: string
@@ -22,6 +23,9 @@ interface ConcatenatedFoodDishEaten{
 export function ShowFoodDishEaten() {
     // Check if user is authenticated
     if (!checkAuth()) return
+
+    // Check if state is lost
+    checkState()
 
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate()

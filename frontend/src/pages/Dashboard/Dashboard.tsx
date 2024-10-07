@@ -22,10 +22,14 @@ import { checkAuth } from "../../utils/checkAuth";
 import { FoodEaten } from "../../interfaces/foodEaten";
 import { DishEaten } from "../../interfaces/dishEaten";
 import { calculateDishMacros } from "../../utils/calculateDishMacros";
+import { checkState } from "../../utils/checkState";
 
 export function Dashboard() {
     // Check if user is authenticated
     if (!checkAuth()) return
+
+    // Check if state is lost
+    checkState()
     
     const { 
         isFetchingData,

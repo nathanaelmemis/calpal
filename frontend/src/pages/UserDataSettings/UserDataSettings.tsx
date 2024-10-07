@@ -7,10 +7,14 @@ import { LoadingButton } from "@mui/lab"
 import { UserDataContext } from "../../context/UserDataContext"
 import { checkAuth } from "../../utils/checkAuth"
 import { DeleteAccountCard } from "./DeleteAccountCard"
+import { checkState } from "../../utils/checkState"
 
 export function UserDataSettings() {
     // Check if user is authenticated
     if (!checkAuth()) return
+
+    // Check if state is lost
+    checkState()
 
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const navigate = useNavigate()

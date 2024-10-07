@@ -12,7 +12,6 @@ import { ShowFoodDishEaten } from './pages/ShowFoodDishEaten/ShowFoodDishEaten';
 import EditFoodDishEaten from './pages/EditFoodDishEaten/EditFoodDishEaten';
 import { Register } from './pages/Register/Register';
 import { ChangePassword } from './pages/ChangePassword/ChangePassword';
-import { Error } from './pages/Error/Error';
 
 
 export function App() {
@@ -31,7 +30,6 @@ export function App() {
                 <Route path={'/editFoodEaten'} element={ <EditFoodDishEaten /> } />
                 <Route path={'/userSettings'} element={ <UserDataSettings /> } />
                 <Route path={'/changePassword'} element={ <ChangePassword /> } /> 
-                <Route path={'/error'} element={ <Error /> } />
                 <Route path={'*'} element={ <Navigate to={'/dashboard'} /> } />
             </Routes>
         </Container>

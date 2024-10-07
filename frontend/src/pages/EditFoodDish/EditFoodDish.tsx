@@ -6,11 +6,15 @@ import EditDishForm from "./EditDishForm";
 import { checkAuth } from "../../utils/checkAuth";
 import { UserDataContext } from "../../context/UserDataContext";
 import { Loading } from "../../components/Loading";
+import { checkState } from "../../utils/checkState";
 
 function EditFoodDish() {
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     // Check if user is authenticated
     if (!checkAuth()) return
+
+    // Check if state is lost
+    checkState()
 
     const [category, setCategory] = useState('Food')
 

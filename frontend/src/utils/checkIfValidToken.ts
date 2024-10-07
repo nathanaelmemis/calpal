@@ -18,9 +18,14 @@ export async function checkIfValidToken() {
                 if (res.status === 200) {
                     getData(['userData', 'foods', 'dishes', 'foodEaten', 'dishEaten'])
                     navigate('/dashboard')
+
+                    return true
                 }
+
+                return false
             } catch (error) {
                 console.error(error)
+                return false
             }
         }
 
