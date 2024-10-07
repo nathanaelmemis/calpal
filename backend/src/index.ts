@@ -1,8 +1,6 @@
 import express, { Express } from "express";
 const cookieParser = require("cookie-parser");
 
-import { client } from "./database";
-
 import { cookieJwtAuth } from "./middleware/cookieJwtAuth";
 import { login } from "./routes/login";
 import { authenticate } from "./routes/authenticate";
