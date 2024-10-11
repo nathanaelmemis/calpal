@@ -85,11 +85,32 @@ export function AddDishCard({ setIsDish, selectedFoodDish, setSelectedFoodDish, 
     useEffect(() => {
         setMealCalories(
             foodEaten
-                .filter((item: FoodEaten) => item.mealType === mealType)
-                .reduce((acc: number, item: any) => acc + item.calories * item.grams * item.quantity, 0)
+                .filter((foodEatenItem: FoodEaten) => foodEatenItem.mealType === mealType)
+                .reduce((acc: number, foodEatenItem: FoodEaten) => {
+                    const foodData = foods.find((foodItem) => foodItem._id === foodEatenItem.foodID)
+
+                    if (!foodData) {
+                        console.error('Food not found:', foodEatenItem)
+                        return acc
+                    }
+
+                    return acc + foodData.calories * foodEatenItem.grams * foodEatenItem.quantity
+                }, 0)
             + dishEaten
-                .filter((item: DishEaten) => item.mealType === mealType)
-                .reduce((acc: number, item: any) => acc + item.calories * item.grams * item.quantity, 0)
+                .filter((dishEatenItem: DishEaten) => dishEatenItem.mealType === mealType)
+                .reduce((acc: number, dishEatenItem: DishEaten) => {
+
+                    const { calories } = calculateDishMacros(
+                        foods, 
+                        dishes, 
+                        dishEatenItem.dishID, 
+                        dishEatenItem.foodServing,
+                        dishEatenItem.grams,
+                        dishEatenItem.quantity
+                    )
+                    
+                    return acc + calories * dishEatenItem.grams * dishEatenItem.quantity
+                }, 0)
         )
     }, [mealType, foodEaten, dishEaten])
 

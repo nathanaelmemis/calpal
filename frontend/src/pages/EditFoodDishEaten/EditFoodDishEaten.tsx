@@ -42,7 +42,7 @@ export default function EditFoodDishEaten() {
     const [selectedFood, setSelectedFood] = useState<SelectedFoodDish>({id: '', name: ''})
     const [autocompleteInputValue, setAutocompleteInputValue] = useState('')
     
-    const [mealType, setMealType] = useState('Breakfast')
+    const [mealType, setMealType] = useState('breakfast')
     const [grams, setGrams] = useState(0)
     const [quantity, setQuantity] = useState(1)
     const [foodServing, setFoodServing] = useState([0])
@@ -79,6 +79,7 @@ export default function EditFoodDishEaten() {
 
             setSelectedFood({id: food._id, name: food.name})
             setAutocompleteInputValue(food.name)
+            setMealType(foodEatenItem.mealType)
             setGrams(foodEatenItem.grams)
             setQuantity(foodEatenItem.quantity)
             setIsDish(false)
@@ -267,7 +268,7 @@ export default function EditFoodDishEaten() {
                             <Select
                                 labelId="demo-simple-select-label"
                                 id="demo-simple-select"
-                                value={mealType}
+                                value={mealType[0].toLowerCase() + mealType.slice(1)}
                                 label="Meal Type"
                                 onChange={(e) => setMealType(e.target.value)}
                                 sx={(theme) => ({
@@ -277,10 +278,10 @@ export default function EditFoodDishEaten() {
                                 })}
                                 size={isMobile ? "small" : "medium"}
                             >
-                                <MenuItem value={'Breakfast'}>Breakfast</MenuItem>
-                                <MenuItem value={'Lunch'}>Lunch</MenuItem>
-                                <MenuItem value={'Snacks'}>Snacks</MenuItem>
-                                <MenuItem value={'Dinner'}>Dinner</MenuItem>
+                                <MenuItem value={'breakfast'}>Breakfast</MenuItem>
+                                <MenuItem value={'lunch'}>Lunch</MenuItem>
+                                <MenuItem value={'snacks'}>Snacks</MenuItem>
+                                <MenuItem value={'dinner'}>Dinner</MenuItem>
                             </Select>
                         </FormControl>
                     </Grid>
