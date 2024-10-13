@@ -26,7 +26,7 @@ function AddFoodDishCardTitle({ mealCalories, mealCaloriesIncrease }: AddFoodDis
                 variant={"h6"}
                 fontWeight={'bold'}
             >
-                Add a {mealType[0].toLowerCase() + mealType.slice(1)}
+                Add a {mealType}
             </Typography>
             <Typography
                 variant={isMobile ? 'body2' : 'body1'}

@@ -93,6 +93,7 @@ export default function EditFoodDishEaten() {
 
             setSelectedFood({id: dish._id, name: dish.name})
             setAutocompleteInputValue(dish.name)
+            setMealType(dishEatenItem.mealType)
             setGrams(dishEatenItem.grams)
             setQuantity(dishEatenItem.quantity)
             setIsDish(true)

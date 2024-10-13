@@ -147,7 +147,7 @@ export function UserDataSettings() {
                             label={'Calories Limit'}
                             value={caloriesLimit}
                             fullWidth
-                            onChange={(e) => setCaloriesLimit(parseInt(e.target.value))}
+                            onChange={(e) => setCaloriesLimit(parseInt(e.target.value) || 0)}
                             size={isMobile ? 'small' : 'medium'}
                             sx={(theme) => ({
                                 fontSize: {
@@ -167,7 +167,7 @@ export function UserDataSettings() {
                             label={'Protein Limit'}
                             value={proteinLimit}
                             fullWidth 
-                            onChange={(e) => setProteinLimit(parseInt(e.target.value))}
+                            onChange={(e) => setProteinLimit(parseInt(e.target.value) || 0)}
                             size={isMobile ? 'small' : 'medium'}
                             sx={(theme) => ({
                                 fontSize: {
@@ -187,7 +187,7 @@ export function UserDataSettings() {
                             label={'Carbs Limit'}
                             value={carbsLimit}
                             fullWidth
-                            onChange={(e) => setCarbsLimit(parseInt(e.target.value))}
+                            onChange={(e) => setCarbsLimit(parseInt(e.target.value) || 0)}
                             size={isMobile ? 'small' : 'medium'}
                             sx={(theme) => ({
                                 fontSize: {
@@ -207,7 +207,7 @@ export function UserDataSettings() {
                             label={'Fats Limit'}
                             value={fatsLimit}
                             fullWidth
-                            onChange={(e) => setFatsLimit(parseInt(e.target.value))}
+                            onChange={(e) => setFatsLimit(parseInt(e.target.value) || 0)}
                             size={isMobile ? 'small' : 'medium'}
                             sx={(theme) => ({
                                 fontSize: {
@@ -249,7 +249,7 @@ export function UserDataSettings() {
                             label={'Breakfast Limit'}
                             value={breakfastCaloriesLimit}
                             fullWidth
-                            onChange={(e) => setBreakfastCaloriesLimit(parseInt(e.target.value))}
+                            onChange={(e) => setBreakfastCaloriesLimit(parseInt(e.target.value) || 0)}
                             size={isMobile ? 'small' : 'medium'}
                             sx={(theme) => ({
                                 fontSize: {
@@ -269,7 +269,7 @@ export function UserDataSettings() {
                             label={'Lunch Limit'}
                             value={lunchCaloriesLimit}
                             fullWidth 
-                            onChange={(e) => setLunchCaloriesLimit(parseInt(e.target.value))}
+                            onChange={(e) => setLunchCaloriesLimit(parseInt(e.target.value) || 0)}
                             size={isMobile ? 'small' : 'medium'}
                             sx={(theme) => ({
                                 fontSize: {
@@ -289,7 +289,7 @@ export function UserDataSettings() {
                             label={'Snacks Limit'}
                             value={snacksCaloriesLimit}
                             fullWidth
-                            onChange={(e) => setSnacksCaloriesLimit(parseInt(e.target.value))}
+                            onChange={(e) => setSnacksCaloriesLimit(parseInt(e.target.value) || 0)}
                             size={isMobile ? 'small' : 'medium'}
                             sx={(theme) => ({
                                 fontSize: {
@@ -309,7 +309,7 @@ export function UserDataSettings() {
                             label={'Dinner Limit'}
                             value={dinnerCaloriesLimit}
                             fullWidth
-                            onChange={(e) => setDinnerCaloriesLimit(parseInt(e.target.value))}
+                            onChange={(e) => setDinnerCaloriesLimit(parseInt(e.target.value) || 0)}
                             size={isMobile ? 'small' : 'medium'}
                             sx={(theme) => ({
                                 fontSize: {

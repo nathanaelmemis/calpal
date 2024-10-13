@@ -38,7 +38,7 @@ export function DeleteAlertDialog(props: DeleteAlertDialogProps) {
                     Cancel
                 </Button>
                 <Button 
-                    color="secondary"
+                    color="error"
                     variant="contained"
                     onClick={props.handleDelete}
                     size={isMobile ? "small" : "medium"}
