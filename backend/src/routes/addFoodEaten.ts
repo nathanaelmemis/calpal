@@ -7,14 +7,13 @@ export async function addFoodEaten(req: Request, res: Response) {
         await client.connect()
 
         const data = req.body
-        data.date = new Date()
 
         // Data Validation
         const schema = {
             userID: "",
             mealType: "",
             foodID: "",
-            date: data.date,
+            date: "",
             grams: 0,
             quantity: 0,
         }

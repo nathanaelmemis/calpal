@@ -128,7 +128,8 @@ export function AddDishCard({ setIsDish, selectedFoodDish, setSelectedFoodDish, 
             grams: grams,
             quantity: quantity,
             mealType: mealType,
-            foodServing: foodServing
+            foodServing: foodServing,
+            date: new Date().toString(),
         })
 
         await getData(['dishEaten'])

@@ -25,7 +25,7 @@ interface DetailedFoodEatenInterface extends FoodEatenInterface {
 interface MongoDBCollectionFindQuery {
     userID: string,
     date?: {
-        $gte: Date
+        $gte: string
     }
 }
 
@@ -33,7 +33,8 @@ type userDataCollections = 'userData' | 'foods' | 'dishes' | 'foodEaten' | 'dish
 
 interface CustomRequest extends Request {
     query: {
-        collectionsToRetrieve: userDataCollections[]
+        collectionsToRetrieve: userDataCollections[],
+        date: string
     }
 }
 
@@ -54,12 +55,14 @@ export async function getUserData(req: CustomRequest, res: Response) {
         
         const data = {
             collectionsToRetrieve: collectionsToRetrieve,
-            userID: userID
+            userID: userID,
+            date: req.query.date
         }
         const collectinsToRetrieveScheme: userDataCollections[] = ['userData']
         const schema = {
             collectionsToRetrieve: collectinsToRetrieveScheme,
-            userID: ''
+            userID: '',
+            date: ''
         }
         if (!validateData(req, res, data, schema)) {
             return
@@ -78,7 +81,7 @@ export async function getUserData(req: CustomRequest, res: Response) {
             // Retrieve user data
             const query: MongoDBCollectionFindQuery = {
                 userID: userID,
-                date: { $gte: moment().startOf('day').toDate() }
+                date: { $gte: data.date }
             }
             if (collection !== 'foodEaten' && collection !== 'dishEaten') {
                 delete query.date
