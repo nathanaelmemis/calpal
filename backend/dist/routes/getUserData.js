@@ -8,12 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserData = getUserData;
-const moment_1 = __importDefault(require("moment"));
 const database_1 = require("../database");
 const utils_1 = require("../utils");
 // Valid collections to retrieve
@@ -27,12 +23,14 @@ function getUserData(req, res) {
             const collectionsToRetrieve = req.query.collectionsToRetrieve;
             const data = {
                 collectionsToRetrieve: collectionsToRetrieve,
-                userID: userID
+                userID: userID,
+                date: req.query.date
             };
             const collectinsToRetrieveScheme = ['userData'];
             const schema = {
                 collectionsToRetrieve: collectinsToRetrieveScheme,
-                userID: ''
+                userID: '',
+                date: ''
             };
             if (!(0, utils_1.validateData)(req, res, data, schema)) {
                 return;
@@ -48,7 +46,7 @@ function getUserData(req, res) {
                 // Retrieve user data
                 const query = {
                     userID: userID,
-                    date: { $gte: (0, moment_1.default)().startOf('day').toDate() }
+                    date: { $gte: data.date }
                 };
                 if (collection !== 'foodEaten' && collection !== 'dishEaten') {
                     delete query.date;
