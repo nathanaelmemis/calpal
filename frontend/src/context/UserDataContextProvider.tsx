@@ -49,12 +49,12 @@ export const UserDataContextProvider = ({ children }: IUserDataContextProviderPr
 
         try {
             const date = new Date()
-            date.setHours(0, 0, 0, 0)
+            const startOfDayUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0))
 
             const res = await axios.get('/api/getUserData', {
                 params: {
                     collectionsToRetrieve: collectionsToRetrieve,
-                    date: date.toString()                
+                    date: startOfDayUTC.toISOString()
                 }
             })
 

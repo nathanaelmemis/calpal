@@ -124,12 +124,14 @@ export function AddFoodCard({ setIsDish, selectedFoodDish, setSelectedFoodDish, 
             return
         }
 
+        const date = new Date()
+        const startOfDayUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0))
         await axios.post('/api/addFoodEaten', {
             foodID: selectedFoodDish.id,
             grams: grams,
             quantity: quantity,
             mealType: mealType,
-            date: new Date().toString()
+            date: startOfDayUTC.toISOString()
         })
 
         await getData(['foodEaten'])

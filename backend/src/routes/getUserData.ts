@@ -25,7 +25,7 @@ interface DetailedFoodEatenInterface extends FoodEatenInterface {
 interface MongoDBCollectionFindQuery {
     userID: string,
     date?: {
-        $gte: string
+        $gte: Date
     }
 }
 
@@ -81,7 +81,7 @@ export async function getUserData(req: CustomRequest, res: Response) {
             // Retrieve user data
             const query: MongoDBCollectionFindQuery = {
                 userID: userID,
-                date: { $gte: data.date }
+                date: { $gte: new Date(data.date) }
             }
             if (collection !== 'foodEaten' && collection !== 'dishEaten') {
                 delete query.date
