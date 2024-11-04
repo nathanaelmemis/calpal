@@ -83,6 +83,7 @@ export function AddDishCard({ setIsDish, selectedFoodDish, setSelectedFoodDish, 
 
     // Update mealCalories when mealType, foodEaten, or dishEaten changes
     useEffect(() => {
+        console.log('mealType:', mealType)
         setMealCalories(
             foodEaten
                 .filter((foodEatenItem: FoodEaten) => foodEatenItem.mealType === mealType)
@@ -109,7 +110,7 @@ export function AddDishCard({ setIsDish, selectedFoodDish, setSelectedFoodDish, 
                         dishEatenItem.quantity
                     )
                     
-                    return acc + calories * dishEatenItem.grams * dishEatenItem.quantity
+                    return acc + calories
                 }, 0)
         )
     }, [mealType, foodEaten, dishEaten])
@@ -123,15 +124,13 @@ export function AddDishCard({ setIsDish, selectedFoodDish, setSelectedFoodDish, 
             return
         }
 
-        const date = new Date()
-        const startOfDayUTC = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0))
         await axios.post('/api/addDishEaten', {
             dishID: selectedFoodDish.id,
             grams: grams,
             quantity: quantity,
             mealType: mealType,
             foodServing: foodServing,
-            date: startOfDayUTC.toISOString()
+            date: new Date().toISOString()
         })
 
         await getData(['dishEaten'])
