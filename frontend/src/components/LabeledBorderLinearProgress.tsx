@@ -4,9 +4,20 @@ interface LabeledBorderLinearProgressProps {
     label: string
     value: number
     bottomText: string
+    color: string
 }
 
-export function LabeledBorderLinearProgress({ label, value, bottomText }: LabeledBorderLinearProgressProps) {
+export function LabeledBorderLinearProgress({ label, value, bottomText, color }: LabeledBorderLinearProgressProps) {
+    function validateValue(value: number) {
+        if (isNaN(value)) {
+            return 0
+        } else if (value > 1) {
+            return 100
+        } else {
+            return value * 100
+        }
+    }
+
     return (
         <Box 
             width={'100%'}
@@ -24,7 +35,12 @@ export function LabeledBorderLinearProgress({ label, value, bottomText }: Labele
             </Typography>
             <BorderLinearProgress
                 variant="determinate"
-                value={value  * 100}
+                value={validateValue(value)}
+                sx={{
+                    [`& .${linearProgressClasses.bar}`]: {
+                        backgroundColor: color,
+                    }
+                }}
             />
             <Typography
                 textAlign={'center'}

@@ -25,7 +25,7 @@ function updateDishEaten(req, res) {
             const schema = {
                 dishEatenID: "",
                 userID: "",
-                dish: "",
+                dishID: "",
                 grams: 0,
                 quantity: 0,
                 mealType: "",
