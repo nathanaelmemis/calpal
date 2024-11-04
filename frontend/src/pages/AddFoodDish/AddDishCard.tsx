@@ -83,7 +83,6 @@ export function AddDishCard({ setIsDish, selectedFoodDish, setSelectedFoodDish, 
 
     // Update mealCalories when mealType, foodEaten, or dishEaten changes
     useEffect(() => {
-        console.log('mealType:', mealType)
         setMealCalories(
             foodEaten
                 .filter((foodEatenItem: FoodEaten) => foodEatenItem.mealType === mealType)

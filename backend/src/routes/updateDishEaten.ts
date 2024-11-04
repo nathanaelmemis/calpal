@@ -17,7 +17,7 @@ export async function updateDishEaten(req: Request, res: Response) {
         const schema = {
             dishEatenID: "",
             userID: "",
-            dish: "",
+            dishID: "",
             grams: 0,
             quantity: 0,
             mealType: "",
