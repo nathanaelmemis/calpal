@@ -117,7 +117,7 @@ export function AddDishCard({ setIsDish, selectedFoodDish, setSelectedFoodDish, 
     async function handleAddDish() {
         setIsLoading(true)
 
-        if (selectedFoodDish.name === '') {
+        if (selectedFoodDish.id === '') {
             setIsLoading(false)
             setIsError(true)
             return

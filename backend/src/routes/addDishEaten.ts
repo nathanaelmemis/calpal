@@ -22,6 +22,11 @@ export async function addDishEaten(req: Request, res: Response) {
             return
         }
 
+        if (data.dishID === "") {
+            res.status(400).send("No dish given.")
+            return
+        }
+
         // convert date string to Date object
         data.date = new Date(data.date)
 
