@@ -46,7 +46,7 @@ function getUserData(req, res) {
                 // Retrieve user data
                 const query = {
                     userID: userID,
-                    date: { $gte: new Date(data.date) }
+                    date: { $gte: data.date }
                 };
                 if (collection !== 'foodEaten' && collection !== 'dishEaten') {
                     delete query.date;
