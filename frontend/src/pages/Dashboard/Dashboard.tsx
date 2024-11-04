@@ -7,7 +7,8 @@ import {
     IconButton, 
     Tooltip, 
     useMediaQuery,
-    useTheme
+    useTheme,
+    Theme
 } from "@mui/material";
 import { Gauge, gaugeClasses } from "@mui/x-charts";
 
@@ -89,6 +90,18 @@ export function Dashboard() {
         setDinnerCalories(calculateMealFoodCalories(foodEatenDinner) + calculateMealDishCalories(dishEatenDinner))
     }, [foodEaten, dishEaten])
 
+    function getColorFromValue(value: number, valueLimit: number, theme: Theme) {
+        if (valueLimit - value < -5) {
+            return theme.palette.error.main
+        } else if (valueLimit - value < -2) {
+            return theme.palette.warning.main
+        } else if (Math.abs(valueLimit - value) < 2) {
+            return theme.palette.success.main
+        } else {
+            return theme.palette.secondary.main
+        }
+    }
+
     return (
         isFetchingData ? <Loading /> :
         <>
@@ -112,7 +125,9 @@ export function Dashboard() {
                     mealType="Breakfast"
                     setMealType={setMealType}
                     calories={breakfastCalories}
-                    caloriesLimit={userData.breakfastCaloriesLimit}/>
+                    caloriesLimit={userData.breakfastCaloriesLimit}
+                    color={getColorFromValue(breakfastCalories, userData.breakfastCaloriesLimit, useTheme())}
+                />
                 <Divider sx={{ my: { sm: '.5em', xs: '.25em'} }}/>
                 <MealGuage 
                     width={isMobile ? 80 : 100}
@@ -120,7 +135,9 @@ export function Dashboard() {
                     mealType="Lunch"
                     setMealType={setMealType}
                     calories={lunchCalories}
-                    caloriesLimit={userData.lunchCaloriesLimit}/>
+                    caloriesLimit={userData.lunchCaloriesLimit}
+                    color={getColorFromValue(lunchCalories, userData.lunchCaloriesLimit, useTheme())}
+                />
                 <Divider sx={{ my: { sm: '.5em', xs: '.25em'} }}/>
                 <MealGuage 
                     width={isMobile ? 80 : 100}
@@ -128,7 +145,9 @@ export function Dashboard() {
                     mealType="Snacks"
                     setMealType={setMealType}
                     calories={snacksCalories}
-                    caloriesLimit={userData.snacksCaloriesLimit}/>
+                    caloriesLimit={userData.snacksCaloriesLimit}
+                    color={getColorFromValue(snacksCalories, userData.snacksCaloriesLimit, useTheme())}
+                />
                 <Divider sx={{ my: { sm: '.5em', xs: '.25em'} }}/>
                 <MealGuage 
                     width={isMobile ? 80 : 100}
@@ -136,7 +155,9 @@ export function Dashboard() {
                     mealType="Dinner"
                     setMealType={setMealType}
                     calories={dinnerCalories}
-                    caloriesLimit={userData.dinnerCaloriesLimit}/>
+                    caloriesLimit={userData.dinnerCaloriesLimit}
+                    color={getColorFromValue(dinnerCalories, userData.dinnerCaloriesLimit, useTheme())}
+                />
             </Grid>
             
             <NavigateButtonCard 
@@ -156,9 +177,10 @@ interface MealGuageProps {
     setMealType: Function;
     calories: number;
     caloriesLimit: number;
+    color: string;
 }
 
-function MealGuage({ width, value, mealType, setMealType, calories, caloriesLimit }: MealGuageProps) {
+function MealGuage({ width, value, mealType, setMealType, calories, caloriesLimit, color }: MealGuageProps) {
     const navigate = useNavigate();
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
 
@@ -202,7 +224,7 @@ function MealGuage({ width, value, mealType, setMealType, calories, caloriesLimi
                             fontWeight: 'bold',
                         },
                         [`& .${gaugeClasses.valueArc}`]: {
-                            fill: `${validateValue(value) === 100 ? theme.palette.error.main : theme.palette.secondary.main}`,
+                            fill: color,
                         },
                     })}
                 />

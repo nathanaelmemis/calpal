@@ -139,7 +139,9 @@ export function MacrosCard({ caloriesIncrease = 0, proteinIncrease = 0, carbsInc
                 <LabeledGauge 
                     value={(totalMacros.calories + caloriesIncrease) / userData.caloriesLimit}
                     innerText="Calories"
-                    bottomText={`${formatNumber(totalMacros.calories + caloriesIncrease)} / ${userData.caloriesLimit} kcal`}/>
+                    bottomText={`${formatNumber(totalMacros.calories + caloriesIncrease)} / ${userData.caloriesLimit} kcal`}
+                    color={getColorFromValue(totalMacros.calories + caloriesIncrease, userData.caloriesLimit, useTheme())}
+                />
             </Grid>
             <Grid
                 item
@@ -170,6 +172,7 @@ export function MacrosCard({ caloriesIncrease = 0, proteinIncrease = 0, carbsInc
                         value={(totalMacros.carbs + carbsIncrease) / userData.carbsLimit}
                         innerText="Carbs"
                         bottomText={`${formatNumber(totalMacros.carbs + carbsIncrease)} / ${userData.carbsLimit} g`}
+                        color={getColorFromValue(totalMacros.carbs + carbsIncrease, userData.carbsLimit, useTheme())}
                     />
                 }
             </Grid>
@@ -196,12 +199,13 @@ export function MacrosCard({ caloriesIncrease = 0, proteinIncrease = 0, carbsInc
                         label="Protein"
                         value={(totalMacros.protein + proteinIncrease) / userData.proteinLimit}
                         bottomText={`${formatNumber(totalMacros.protein + proteinIncrease)} / ${userData.proteinLimit} g`}
-                        color={getColorFromValue(totalMacros.carbs + carbsIncrease, userData.carbsLimit, useTheme())}
+                        color={getColorFromValue(totalMacros.protein + proteinIncrease, userData.proteinLimit, useTheme())}
                     /> :
                     <LabeledGauge 
                         value={(totalMacros.protein + proteinIncrease) / userData.proteinLimit}
                         innerText="Protein"
                         bottomText={`${formatNumber(totalMacros.protein + proteinIncrease)} / ${userData.proteinLimit} g`}
+                        color={getColorFromValue(totalMacros.protein + proteinIncrease, userData.proteinLimit, useTheme())}
                     />
                 }
             </Grid>
@@ -228,12 +232,13 @@ export function MacrosCard({ caloriesIncrease = 0, proteinIncrease = 0, carbsInc
                         label="Fats"
                         value={(totalMacros.fats + fatsIncrease) / userData.fatsLimit}
                         bottomText={`${formatNumber(totalMacros.fats + fatsIncrease)} / ${userData.fatsLimit} g`}
-                        color={getColorFromValue(totalMacros.carbs + carbsIncrease, userData.carbsLimit, useTheme())}
+                        color={getColorFromValue(totalMacros.fats + fatsIncrease, userData.fatsLimit, useTheme())}
                     /> :
                     <LabeledGauge 
                         value={(totalMacros.fats + fatsIncrease) / userData.fatsLimit}
                         innerText="Fats"
                         bottomText={`${formatNumber(totalMacros.fats + fatsIncrease)} / ${userData.fatsLimit} g`}
+                        color={getColorFromValue(totalMacros.fats + fatsIncrease, userData.fatsLimit, useTheme())}
                     />
                 }
             </Grid>

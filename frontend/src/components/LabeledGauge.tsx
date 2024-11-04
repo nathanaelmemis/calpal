@@ -5,9 +5,10 @@ interface LabeledGaugeProps {
     value: number;
     innerText: string;
     bottomText: string;
+    color: string;
 }
 
-function LabeledGauge({ value, innerText, bottomText }: LabeledGaugeProps) {
+function LabeledGauge({ value, innerText, bottomText, color }: LabeledGaugeProps) {
     function validateValue(value: number) {
         if (isNaN(value)) {
             return 0
@@ -40,7 +41,7 @@ function LabeledGauge({ value, innerText, bottomText }: LabeledGaugeProps) {
                         fontWeight: 'bold',
                     },
                     [`& .${gaugeClasses.valueArc}`]: {
-                        fill: `${validateValue(value) === 100 ? theme.palette.error.main : theme.palette.secondary.main}`,
+                        fill: color,
                     },
                 })}
             />
