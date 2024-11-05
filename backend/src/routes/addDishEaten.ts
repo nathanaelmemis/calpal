@@ -27,9 +27,6 @@ export async function addDishEaten(req: Request, res: Response) {
             return
         }
 
-        // convert date string to Date object
-        data.date = new Date(data.date)
-
         routeLog(req, `Adding Dish Eaten: ${req.body.userID}`)
 
         const result = await client.db("CalPal").collection("dishEaten").insertOne(data)

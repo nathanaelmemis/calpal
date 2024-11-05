@@ -33,8 +33,6 @@ function addFoodEaten(req, res) {
                 res.status(400).send("No food given.");
                 return;
             }
-            // convert date string to Date object
-            data.date = new Date(data.date);
             (0, utils_1.routeLog)(req, `Adding Food Eaten: ${req.body.userID}`);
             const result = yield database_1.client.db("CalPal").collection("foodEaten").insertOne(data);
             if (!result.insertedId) {
