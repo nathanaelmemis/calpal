@@ -124,7 +124,6 @@ export default function EditFoodDishEaten() {
             setIsDish(false)
             setAutocompleteInputValue(food.name)
             setSelectedFood({id: food._id, name: food.name})
-            setGrams(food.defaultServing)
             setQuantity(1)
         } else {
             console.error('Food/Dish not found:', newValue)
