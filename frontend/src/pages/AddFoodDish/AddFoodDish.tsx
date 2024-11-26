@@ -1,4 +1,3 @@
-import { Grid, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useContext, useState } from "react";
 
 import Header from "../../components/Header";
@@ -6,13 +5,13 @@ import { AddFoodCard } from "./AddFoodCard";
 import { MacrosCard } from "../../components/MacrosCard";
 
 import { AddDishCard } from "./AddDishCard";
-import { formatNumber } from "../../utils/formatNumber";
 import { UserDataContext } from "../../context/UserDataContext";
 import { Loading } from "../../components/Loading";
 import { checkAuth } from "../../utils/checkAuth";
 import { SelectedFoodDish } from "../../interfaces/selectedFoodDish";
 import { Macros } from "../../interfaces/macros";
 import { checkState } from "../../utils/checkState";
+import { MacrosIncreaseIndicator } from "../../components/MacrosIncreaseIndicator";
 
 function AddFoodDish() {
     // Check if user is authenticated
@@ -20,8 +19,6 @@ function AddFoodDish() {
 
     // Check if state is lost
     checkState()
-    
-    const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
 
     const {
         isFetchingData
@@ -56,122 +53,12 @@ function AddFoodDish() {
             />
 
             {/* Increase Meter */}
-            <Grid
-                container
-                bgcolor={'primary.main'}
-                display={'flex'}
-                mb={isMobile ? '1.25em' : '2em'}
-                justifyContent={'space-evenly'}
-                sx={{
-                    boxShadow: 5,
-                    borderRadius: 5,
-                    py: {
-                        sm: '1em',
-                        xs: '.75em'
-                    }
-                }}
-            >
-                <Grid 
-                    item
-                    xs={4}
-                >
-                    {
-                        !isMobile ? '' :
-                        <Typography 
-                            width={'100%'}
-                            textAlign={'center'}
-                            variant="body2"
-                        >
-                            Calories
-                        </Typography> 
-                    }
-                    <Typography 
-                        width={'100%'}
-                        textAlign={'center'}
-                        sx={(theme) => ({
-                            fontSize: {
-                                sm: theme.typography.body1.fontSize,
-                                xs: theme.typography.body2.fontSize
-                            }
-                        })}
-                    >+{formatNumber(caloriesIncrease)} kcal</Typography>
-                </Grid>
-                <Grid 
-                    item
-                    xs={2.63}
-                >
-                    {
-                        !isMobile ? '' :
-                        <Typography 
-                            width={'100%'}
-                            textAlign={'center'}
-                            variant="body2"
-                        >
-                            Carbs
-                        </Typography> 
-                    }
-                    <Typography 
-                        width={'100%'}
-                        textAlign={'center'}
-                        sx={(theme) => ({
-                            fontSize: {
-                                sm: theme.typography.body1.fontSize,
-                                xs: theme.typography.body2.fontSize
-                            }
-                        })}
-                    >+{formatNumber(carbsIncrease)} g</Typography>
-                </Grid>
-                <Grid 
-                    item
-                    xs={2.63}
-                >
-                    {
-                        !isMobile ? '' :
-                        <Typography 
-                            width={'100%'}
-                            textAlign={'center'}
-                            variant="body2"
-                        >
-                            Protein
-                        </Typography> 
-                    }
-                    <Typography 
-                        width={'100%'}
-                        textAlign={'center'}
-                        sx={(theme) => ({
-                            fontSize: {
-                                sm: theme.typography.body1.fontSize,
-                                xs: theme.typography.body2.fontSize
-                            }
-                        })}
-                    >+{formatNumber(proteinIncrease)} g</Typography>
-                </Grid>
-                <Grid 
-                    item
-                    xs={2.63}
-                >
-                    {
-                        !isMobile ? '' :
-                        <Typography 
-                            width={'100%'}
-                            textAlign={'center'}
-                            variant="body2"
-                        >
-                            Fats
-                        </Typography> 
-                    }
-                    <Typography 
-                        width={'100%'}
-                        textAlign={'center'}
-                        sx={(theme) => ({
-                            fontSize: {
-                                sm: theme.typography.body1.fontSize,
-                                xs: theme.typography.body2.fontSize
-                            }
-                        })}
-                    >+{formatNumber(fatsIncrease)} g</Typography>
-                </Grid>
-            </Grid>
+            <MacrosIncreaseIndicator 
+                caloriesIncrease={caloriesIncrease}
+                proteinIncrease={proteinIncrease}
+                carbsIncrease={carbsIncrease}
+                fatsIncrease={fatsIncrease}
+            />
 
             {
                 isDish ? <AddDishCard 

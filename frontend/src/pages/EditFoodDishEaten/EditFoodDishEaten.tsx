@@ -16,6 +16,10 @@ import { DeleteAlertDialog } from "./EditFoodDishDeleteAlertDialog";
 import { UserDataContext } from "../../context/UserDataContext";
 import { SelectedFoodDish } from "../../interfaces/selectedFoodDish";
 import { checkState } from "../../utils/checkState";
+import { MacrosCard } from "../../components/MacrosCard";
+import { Macros } from "../../interfaces/macros";
+import { calculateDishMacros } from "../../utils/calculateDishMacros";
+import { MacrosIncreaseIndicator } from "../../components/MacrosIncreaseIndicator";
 
 export default function EditFoodDishEaten() {
     // Check if user is authenticated
@@ -41,6 +45,11 @@ export default function EditFoodDishEaten() {
 
     const [selectedFood, setSelectedFood] = useState<SelectedFoodDish>({id: '', name: ''})
     const [autocompleteInputValue, setAutocompleteInputValue] = useState('')
+
+    const [caloriesIncrease, setCaloriesIncrease] = useState<number>(0)
+    const [proteinIncrease, setProteinIncrease] = useState<number>(0)
+    const [carbsIncrease, setCarbsIncrease] = useState<number>(0)
+    const [fatsIncrease, setFatsIncrease] = useState<number>(0)
     
     const [mealType, setMealType] = useState('breakfast')
     const [grams, setGrams] = useState(0)
@@ -53,6 +62,20 @@ export default function EditFoodDishEaten() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
     const [renderTrigger, setRenderTrigger] = useState<number>(0)
+
+    const [currentFoodMacros, setCurrentFoodMacros] = useState<Macros>({
+        calories: 0,
+        carbs: 0,
+        protein: 0,
+        fats: 0
+    })
+
+    function setMacrosIncrease(macros: Macros) {
+        setCaloriesIncrease(macros.calories)
+        setCarbsIncrease(macros.carbs)
+        setProteinIncrease(macros.protein)
+        setFatsIncrease(macros.fats)
+    }
 
     // Get initial food/dish data
     useEffect(() => {
@@ -83,6 +106,14 @@ export default function EditFoodDishEaten() {
             setGrams(foodEatenItem.grams)
             setQuantity(foodEatenItem.quantity)
             setIsDish(false)
+
+            const macrosIncrease = {
+                calories: food.calories * foodEatenItem.grams * foodEatenItem.quantity,
+                carbs: food.carbs * foodEatenItem.grams * foodEatenItem.quantity,
+                protein: food.protein * foodEatenItem.grams * foodEatenItem.quantity,
+                fats: food.fats  * foodEatenItem.grams * foodEatenItem.quantity,
+            }
+            setCurrentFoodMacros(macrosIncrease)
         } else if (dishEatenItem) {
             const dish = dishes.find((dish: Dish) => dish._id === dishEatenItem.dishID)
 
@@ -98,6 +129,16 @@ export default function EditFoodDishEaten() {
             setQuantity(dishEatenItem.quantity)
             setIsDish(true)
             setFoodServing([...dishEatenItem.foodServing])
+            
+            const macrosIncrease = {...calculateDishMacros(
+                foods,
+                dishes,
+                dish._id, 
+                dish.foods.map((dishFood) => dishFood.defaultServing), 
+                dishEatenItem.grams,
+                dishEatenItem.quantity
+            )}
+            setCurrentFoodMacros(macrosIncrease)
         }
 
         setRenderTrigger(renderTrigger + 1)
@@ -112,9 +153,23 @@ export default function EditFoodDishEaten() {
             setIsDish(true)
             setAutocompleteInputValue(dish.name)
             setSelectedFood({id: dish._id, name: dish.name})
-            setGrams(dish.defaultServing)
             setQuantity(1)
             setFoodServing([...dish.foods.map((dishFoodItem: DishFood) => dishFoodItem.defaultServing)])
+
+            const selectedDishMacros = {...calculateDishMacros(
+                foods,
+                dishes,
+                dish._id, 
+                dish.foods.map((dishFood) => dishFood.defaultServing), 
+                grams,
+                quantity
+            )}
+            setMacrosIncrease({
+                calories: selectedDishMacros.calories - currentFoodMacros.calories,
+                carbs: selectedDishMacros.carbs - currentFoodMacros.carbs,
+                protein: selectedDishMacros.protein - currentFoodMacros.protein,
+                fats: selectedDishMacros.fats - currentFoodMacros.fats
+            })
             return
         }
 
@@ -125,6 +180,13 @@ export default function EditFoodDishEaten() {
             setAutocompleteInputValue(food.name)
             setSelectedFood({id: food._id, name: food.name})
             setQuantity(1)
+            setMacrosIncrease({
+                calories: food.calories * grams * quantity - currentFoodMacros.calories,
+                carbs: food.carbs * grams * quantity - currentFoodMacros.carbs,
+                protein: food.protein * grams * quantity - currentFoodMacros.protein,
+                fats: food.fats  * grams * quantity - currentFoodMacros.fats,
+            })
+            
         } else {
             console.error('Food/Dish not found:', newValue)
         }
@@ -197,6 +259,20 @@ export default function EditFoodDishEaten() {
     return (
         <>
             <Header />
+
+            <MacrosCard 
+                caloriesIncrease={caloriesIncrease}
+                proteinIncrease={proteinIncrease}
+                carbsIncrease={carbsIncrease}
+                fatsIncrease={fatsIncrease}
+            />
+
+            <MacrosIncreaseIndicator 
+                caloriesIncrease={caloriesIncrease + currentFoodMacros.calories}
+                proteinIncrease={proteinIncrease + currentFoodMacros.protein}
+                carbsIncrease={carbsIncrease + currentFoodMacros.carbs}
+                fatsIncrease={fatsIncrease + currentFoodMacros.fats}
+            />
 
             <Grid
                 bgcolor={'primary.main'}
