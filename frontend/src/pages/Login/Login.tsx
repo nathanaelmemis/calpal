@@ -65,7 +65,7 @@ export function Login() {
             console.error(error)
             setIsFailedLogin(true)
             setIsLoading(false)
-            setErrorMessage(error.response.data || error.code)
+            setErrorMessage(error.response.data || "Server is down. Please try again later.")
         }
 
         setIsLoading(false)
