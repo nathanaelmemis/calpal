@@ -8,7 +8,7 @@ import { SelectedFoodDish } from "../../interfaces/selectedFoodDish"
 
 interface DishfoodListProps {
     dishes: Dish[],
-    selectedFood: SelectedFoodDish,
+    selectedFoodDish: SelectedFoodDish,
     foodServing: number[],
     handleOnChangeServing: (e: any, index: number, setServing: (newValue: number) => void) => void
 }
@@ -22,7 +22,7 @@ export function DishFoodList(props: DishfoodListProps) {
 
     // Get dish data
     useEffect(() => {
-        const dish = props.dishes.find((dish: Dish) => dish._id === props.selectedFood.id)
+        const dish = props.dishes.find((dish: Dish) => dish._id === props.selectedFoodDish.id)
 
         if (!dish) return
         
@@ -75,7 +75,7 @@ export function DishFoodList(props: DishfoodListProps) {
         })
 
         setRenderedList(renderedList)
-    }, [props.selectedFood])
+    }, [props.selectedFoodDish])
 
     return (
         <>{renderedList}</>

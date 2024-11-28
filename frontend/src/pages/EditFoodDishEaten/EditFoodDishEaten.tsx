@@ -20,6 +20,7 @@ import { MacrosCard } from "../../components/MacrosCard";
 import { Macros } from "../../interfaces/macros";
 import { calculateDishMacros } from "../../utils/calculateDishMacros";
 import { MacrosIncreaseIndicator } from "../../components/MacrosIncreaseIndicator";
+import { formatNumber } from "../../utils/formatNumber";
 
 export default function EditFoodDishEaten() {
     // Check if user is authenticated
@@ -32,6 +33,7 @@ export default function EditFoodDishEaten() {
     const navigate = useNavigate()
 
     const {
+        userData,
         foods,
         dishes,
         foodEaten,
@@ -40,17 +42,19 @@ export default function EditFoodDishEaten() {
         foodDishEatenEditing
     } = useContext(UserDataContext)
 
-    const foodOptions = foods.map((option) => ({name: option.name, id: option._id}))
-    const dishOptions = dishes.map((option) => ({name: option.name, id: option._id}))
+    const foodOptions = foods.map((option) => ({ name: option.name, id: option._id }))
+    const dishOptions = dishes.map((option) => ({ name: option.name, id: option._id }))
 
-    const [selectedFood, setSelectedFood] = useState<SelectedFoodDish>({id: '', name: ''})
+    const [selectedFoodDish, setSelectedFood] = useState<SelectedFoodDish>({ id: '', name: '' })
     const [autocompleteInputValue, setAutocompleteInputValue] = useState('')
+
+    const [mealCalories, setMealCalories] = useState<number>(0)
 
     const [caloriesIncrease, setCaloriesIncrease] = useState<number>(0)
     const [proteinIncrease, setProteinIncrease] = useState<number>(0)
     const [carbsIncrease, setCarbsIncrease] = useState<number>(0)
     const [fatsIncrease, setFatsIncrease] = useState<number>(0)
-    
+
     const [mealType, setMealType] = useState('breakfast')
     const [grams, setGrams] = useState(0)
     const [quantity, setQuantity] = useState(1)
@@ -79,9 +83,9 @@ export default function EditFoodDishEaten() {
 
     // Get initial food/dish data
     useEffect(() => {
-        const foodEatenItem = foodEaten.find((foodEatenItem: FoodEaten) => {return foodEatenItem._id === foodDishEatenEditing.foodDishEatenEditingID})
-        const dishEatenItem = dishEaten.find((dishEatenItem: DishEaten) => {return dishEatenItem._id === foodDishEatenEditing.foodDishEatenEditingID})
-    
+        const foodEatenItem = foodEaten.find((foodEatenItem: FoodEaten) => { return foodEatenItem._id === foodDishEatenEditing.foodDishEatenEditingID })
+        const dishEatenItem = dishEaten.find((dishEatenItem: DishEaten) => { return dishEatenItem._id === foodDishEatenEditing.foodDishEatenEditingID })
+
         if (!foodEatenItem && !dishEatenItem) {
             console.error('Food/Dish Eaten not found:', foodDishEatenEditing)
             return
@@ -100,7 +104,7 @@ export default function EditFoodDishEaten() {
                 return
             }
 
-            setSelectedFood({id: food._id, name: food.name})
+            setSelectedFood({ id: food._id, name: food.name })
             setAutocompleteInputValue(food.name)
             setMealType(foodEatenItem.mealType)
             setGrams(foodEatenItem.grams)
@@ -111,9 +115,10 @@ export default function EditFoodDishEaten() {
                 calories: food.calories * foodEatenItem.grams * foodEatenItem.quantity,
                 carbs: food.carbs * foodEatenItem.grams * foodEatenItem.quantity,
                 protein: food.protein * foodEatenItem.grams * foodEatenItem.quantity,
-                fats: food.fats  * foodEatenItem.grams * foodEatenItem.quantity,
+                fats: food.fats * foodEatenItem.grams * foodEatenItem.quantity,
             }
             setCurrentFoodMacros(macrosIncrease)
+            setMacrosIncrease(macrosIncrease)
         } else if (dishEatenItem) {
             const dish = dishes.find((dish: Dish) => dish._id === dishEatenItem.dishID)
 
@@ -122,23 +127,26 @@ export default function EditFoodDishEaten() {
                 return
             }
 
-            setSelectedFood({id: dish._id, name: dish.name})
+            setSelectedFood({ id: dish._id, name: dish.name })
             setAutocompleteInputValue(dish.name)
             setMealType(dishEatenItem.mealType)
             setGrams(dishEatenItem.grams)
             setQuantity(dishEatenItem.quantity)
             setIsDish(true)
             setFoodServing([...dishEatenItem.foodServing])
-            
-            const macrosIncrease = {...calculateDishMacros(
-                foods,
-                dishes,
-                dish._id, 
-                dish.foods.map((dishFood) => dishFood.defaultServing), 
-                dishEatenItem.grams,
-                dishEatenItem.quantity
-            )}
+
+            const macrosIncrease = {
+                ...calculateDishMacros(
+                    foods,
+                    dishes,
+                    dish._id,
+                    dish.foods.map((dishFood) => dishFood.defaultServing),
+                    dishEatenItem.grams,
+                    dishEatenItem.quantity
+                )
+            }
             setCurrentFoodMacros(macrosIncrease)
+            setMacrosIncrease(macrosIncrease)
         }
 
         setRenderTrigger(renderTrigger + 1)
@@ -152,24 +160,21 @@ export default function EditFoodDishEaten() {
         if (dish) {
             setIsDish(true)
             setAutocompleteInputValue(dish.name)
-            setSelectedFood({id: dish._id, name: dish.name})
+            setSelectedFood({ id: dish._id, name: dish.name })
             setQuantity(1)
             setFoodServing([...dish.foods.map((dishFoodItem: DishFood) => dishFoodItem.defaultServing)])
 
-            const selectedDishMacros = {...calculateDishMacros(
-                foods,
-                dishes,
-                dish._id, 
-                dish.foods.map((dishFood) => dishFood.defaultServing), 
-                grams,
-                quantity
-            )}
-            setMacrosIncrease({
-                calories: selectedDishMacros.calories - currentFoodMacros.calories,
-                carbs: selectedDishMacros.carbs - currentFoodMacros.carbs,
-                protein: selectedDishMacros.protein - currentFoodMacros.protein,
-                fats: selectedDishMacros.fats - currentFoodMacros.fats
-            })
+            const selectedDishMacros = {
+                ...calculateDishMacros(
+                    foods,
+                    dishes,
+                    dish._id,
+                    dish.foods.map((dishFood) => dishFood.defaultServing),
+                    grams,
+                    quantity
+                )
+            }
+            setMacrosIncrease(selectedDishMacros)
             return
         }
 
@@ -178,19 +183,109 @@ export default function EditFoodDishEaten() {
         if (food) {
             setIsDish(false)
             setAutocompleteInputValue(food.name)
-            setSelectedFood({id: food._id, name: food.name})
+            setSelectedFood({ id: food._id, name: food.name })
             setQuantity(1)
             setMacrosIncrease({
-                calories: food.calories * grams * quantity - currentFoodMacros.calories,
-                carbs: food.carbs * grams * quantity - currentFoodMacros.carbs,
-                protein: food.protein * grams * quantity - currentFoodMacros.protein,
-                fats: food.fats  * grams * quantity - currentFoodMacros.fats,
+                calories: food.calories * grams * quantity,
+                carbs: food.carbs * grams * quantity,
+                protein: food.protein * grams * quantity,
+                fats: food.fats * grams * quantity,
             })
-            
+
         } else {
             console.error('Food/Dish not found:', newValue)
         }
     }
+
+    // Update mealCaloriesIncrease when grams or quantity changes
+    useEffect(() => {
+        const dish = dishes.find((dish: Dish) => dish._id === selectedFoodDish.id)
+
+        if (dish) {
+            setIsDish(true)
+            setAutocompleteInputValue(dish.name)
+            setSelectedFood({ id: dish._id, name: dish.name })
+            setQuantity(1)
+            setFoodServing([...dish.foods.map((dishFoodItem: DishFood) => dishFoodItem.defaultServing)])
+
+            const selectedDishMacros = {
+                ...calculateDishMacros(
+                    foods,
+                    dishes,
+                    dish._id,
+                    dish.foods.map((dishFood) => dishFood.defaultServing),
+                    grams,
+                    quantity
+                )
+            }
+            setMacrosIncrease(selectedDishMacros)
+            return
+        }
+
+        const food = foods.find((food: Food) => food._id === selectedFoodDish.id)
+
+        if (food) {
+            setIsDish(false)
+            setAutocompleteInputValue(food.name)
+            setSelectedFood({ id: food._id, name: food.name })
+            setQuantity(1)
+            setMacrosIncrease({
+                calories: food.calories * grams * quantity,
+                carbs: food.carbs * grams * quantity,
+                protein: food.protein * grams * quantity,
+                fats: food.fats * grams * quantity,
+            })
+
+        } else {
+            console.error('Food/Dish not found:', selectedFoodDish)
+        }
+    }, [grams, quantity])
+
+    // Update mealCalories when foodEaten or dishEaten changes
+    useEffect(() => {
+        const currentFoodEatenItem = foodEaten.find((foodEatenItem: FoodEaten) => foodEatenItem._id === foodDishEatenEditing.foodDishEatenEditingID)
+        const currentDishEatenItem = dishEaten.find((dishEatenItem: DishEaten) => dishEatenItem._id === foodDishEatenEditing.foodDishEatenEditingID)
+        let isFoodEatenWithinMealType = false
+        if (currentFoodEatenItem) {
+            isFoodEatenWithinMealType = currentFoodEatenItem.mealType === mealType
+        } else if (currentDishEatenItem) {
+            isFoodEatenWithinMealType = currentDishEatenItem.mealType === mealType
+        } else {
+            console.error('Food/Dish not found:', selectedFoodDish)
+            return
+        }
+
+        setMealCalories(
+            (isFoodEatenWithinMealType ? 0 : currentFoodMacros.calories) +
+            foodEaten
+                .filter((foodEatenItem: FoodEaten) => foodEatenItem.mealType === mealType)
+                .reduce((acc: number, foodEatenItem: FoodEaten) => {
+                    const foodData = foods.find((foodItem) => foodItem._id === foodEatenItem.foodID)
+
+                    if (!foodData) {
+                        console.error('Food not found:', foodEatenItem)
+                        return acc
+                    }
+
+                    return acc + foodData.calories * foodEatenItem.grams * foodEatenItem.quantity
+                }, 0)
+            + dishEaten
+                .filter((dishEatenItem: DishEaten) => dishEatenItem.mealType === mealType)
+                .reduce((acc: number, dishEatenItem: DishEaten) => {
+
+                    const { calories } = calculateDishMacros(
+                        foods, 
+                        dishes, 
+                        dishEatenItem.dishID, 
+                        dishEatenItem.foodServing,
+                        dishEatenItem.grams,
+                        dishEatenItem.quantity
+                    )
+                    
+                    return acc + calories
+                }, 0)
+        )
+    }, [selectedFoodDish, mealType, foodEaten, dishEaten])
 
     async function handleSave() {
         setIsLoading(true)
@@ -199,13 +294,13 @@ export default function EditFoodDishEaten() {
             if (isDish) {
                 const res = await axios.put('/api/updateDishEaten', {
                     dishEatenID: foodDishEatenEditing.foodDishEatenEditingID,
-                    dishID: selectedFood.id,
+                    dishID: selectedFoodDish.id,
                     grams: grams,
                     quantity: quantity,
                     mealType: mealType,
                     foodServing: foodServing
                 })
-    
+
                 if (res.status === 200) {
                     await getData(['dishEaten'])
                     setIsLoading(false)
@@ -214,12 +309,12 @@ export default function EditFoodDishEaten() {
             } else {
                 const res = await axios.put('/api/updateFoodEaten', {
                     foodEatenID: foodDishEatenEditing.foodDishEatenEditingID,
-                    foodID: selectedFood.id,
+                    foodID: selectedFoodDish.id,
                     grams: grams,
                     quantity: quantity,
                     mealType: mealType
                 })
-    
+
                 if (res.status === 200) {
                     await getData(['foodEaten'])
                     setIsLoading(false)
@@ -254,24 +349,24 @@ export default function EditFoodDishEaten() {
         }
 
         setIsLoading(false)
-    }   
+    }
 
     return (
         <>
             <Header />
 
-            <MacrosCard 
+            <MacrosCard
+                caloriesIncrease={caloriesIncrease - currentFoodMacros.calories}
+                proteinIncrease={proteinIncrease - currentFoodMacros.protein}
+                carbsIncrease={carbsIncrease - currentFoodMacros.carbs}
+                fatsIncrease={fatsIncrease - currentFoodMacros.fats}
+            />
+
+            <MacrosIncreaseIndicator
                 caloriesIncrease={caloriesIncrease}
                 proteinIncrease={proteinIncrease}
                 carbsIncrease={carbsIncrease}
                 fatsIncrease={fatsIncrease}
-            />
-
-            <MacrosIncreaseIndicator 
-                caloriesIncrease={caloriesIncrease + currentFoodMacros.calories}
-                proteinIncrease={proteinIncrease + currentFoodMacros.protein}
-                carbsIncrease={carbsIncrease + currentFoodMacros.carbs}
-                fatsIncrease={fatsIncrease + currentFoodMacros.fats}
             />
 
             <Grid
@@ -279,7 +374,7 @@ export default function EditFoodDishEaten() {
                 p={isMobile ? '1em' : '2em'}
                 mb={'2em'}
                 sx={{
-                    boxShadow: 5,   
+                    boxShadow: 5,
                     borderRadius: 5
                 }}
                 display={'flex'}
@@ -294,8 +389,13 @@ export default function EditFoodDishEaten() {
                     <Typography
                         variant={'h6'}
                         fontWeight={'bold'}
-                        >
+                    >
                         Editing Food/Dish Eaten
+                    </Typography>
+                    <Typography
+                        variant={isMobile ? 'body2' : 'body1'}
+                    >
+                        {`${formatNumber(mealCalories + caloriesIncrease - currentFoodMacros.calories)} / ${userData[mealType + 'CaloriesLimit']} g`}
                     </Typography>
                 </Grid>
 
@@ -306,7 +406,7 @@ export default function EditFoodDishEaten() {
                     spacing={2}
                     mb={'1em'}
                 >
-                    <Grid 
+                    <Grid
                         sm={5.5}
                         xs={12}
                         item
@@ -316,12 +416,12 @@ export default function EditFoodDishEaten() {
                             id="combo-box-demo"
                             options={isDish ? dishOptions : foodOptions}
                             getOptionLabel={(option) => option.name}
-                            fullWidth   
+                            fullWidth
                             renderInput={(params) => <TextField {...params} label={isDish ? "Dish" : "Food"} color="secondary" />}
-                            value={selectedFood}
+                            value={selectedFoodDish}
                             inputValue={autocompleteInputValue}
                             onChange={handleOnChangeAutocomplete}
-                            onInputChange={(_event, newInputValue) => {setAutocompleteInputValue(newInputValue)}}
+                            onInputChange={(_event, newInputValue) => { setAutocompleteInputValue(newInputValue) }}
                             isOptionEqualToValue={(options, value) => options.id.valueOf === value.id.valueOf}
                             sx={(theme) => ({
                                 '& .MuiAutocomplete-input': {
@@ -336,7 +436,7 @@ export default function EditFoodDishEaten() {
                         xs={12}
                         item
                     >
-                        <FormControl 
+                        <FormControl
                             fullWidth
                             color="secondary"
                         >
@@ -389,10 +489,10 @@ export default function EditFoodDishEaten() {
 
                 {/* Dish Foods List */}
                 {
-                    isDish && 
-                    <DishFoodList 
+                    isDish &&
+                    <DishFoodList
                         dishes={dishes}
-                        selectedFood={selectedFood}
+                        selectedFoodDish={selectedFoodDish}
                         foodServing={foodServing}
                         handleOnChangeServing={(e: any, index: number, setServing: (newValue: number) => void) => {
                             const newFoodServing = [...foodServing]
@@ -402,7 +502,7 @@ export default function EditFoodDishEaten() {
                         }}
                     />
                 }
-                
+
 
                 {/* Buttons */}
                 <Box
@@ -444,8 +544,8 @@ export default function EditFoodDishEaten() {
                 </Box>
             </Grid>
 
-            <DeleteAlertDialog 
-                foodDishEatenToDelete={selectedFood.name}
+            <DeleteAlertDialog
+                foodDishEatenToDelete={selectedFoodDish.name}
                 open={isDeleteDialogOpen}
                 setOpen={setIsDeleteDialogOpen}
                 handleDelete={() => {

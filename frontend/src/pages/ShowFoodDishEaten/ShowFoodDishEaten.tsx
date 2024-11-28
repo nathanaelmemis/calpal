@@ -9,6 +9,7 @@ import { FoodEaten } from "../../interfaces/foodEaten";
 import { checkAuth } from "../../utils/checkAuth";
 import { UserDataContext } from "../../context/UserDataContext";
 import { checkState } from "../../utils/checkState";
+import { MacrosCard } from "../../components/MacrosCard";
 
 interface ConcatenatedFoodDishEaten{
     id: string
@@ -103,6 +104,13 @@ export function ShowFoodDishEaten() {
     return (
         <>
             <Header />
+
+            <MacrosCard 
+                caloriesIncrease={0}
+                proteinIncrease={0}
+                carbsIncrease={0}
+                fatsIncrease={0}
+            />
 
             <NavigateButtonCard 
                 text={'Show Food Metrics'} 
@@ -208,7 +216,7 @@ export function ShowFoodDishEaten() {
                         
                         return (
                             <Grid 
-                                key={foodDishEatenItem.name} 
+                                key={foodDishEatenItem.id} 
                                 container
                                 display={'flex'}
                                 my={'.5em'}
