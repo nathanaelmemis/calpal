@@ -1,4 +1,4 @@
-import { Grid, TextField } from "@mui/material"
+import { Grid, TextField, useMediaQuery, useTheme } from "@mui/material"
 import { useState, useEffect, useContext, ReactElement } from "react"
 import { Dish } from "../../interfaces/dish"
 import { DishFood } from "../../interfaces/dishFood"
@@ -14,6 +14,7 @@ interface DishfoodListProps {
 }
 
 export function DishFoodList(props: DishfoodListProps) {
+    const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const [renderedList, setRenderedList] = useState<ReactElement[]>([])
 
     const {
@@ -50,14 +51,18 @@ export function DishFoodList(props: DishfoodListProps) {
                             value={food?.name || ''}
                             color="secondary" 
                             fullWidth
-                            sx={{
+                            sx={(theme) => ({
+                                '& .MuiOutlinedInput-input': {
+                                    fontSize: isMobile ? theme.typography.body2.fontSize : theme.typography.body1.fontSize
+                                },
                                 pointerEvents: 'none',
                                 '& .MuiOutlinedInput-root': {
                                     '& fieldset': {
                                         borderColor: 'rgba(0, 0, 0, 0.12)',
                                     }
                                 }
-                            }}
+                            })}
+                            size={isMobile ? "small" : "medium"}
                         />
                     </Grid>
                     <Grid
@@ -89,6 +94,7 @@ interface DishFoodItemProps {
 }
 
 function DishFoodItem(props: DishFoodItemProps) {
+    const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
     const [serving, setServing] = useState(props.serving)
 
     return (
@@ -98,6 +104,18 @@ function DishFoodItem(props: DishFoodItemProps) {
             label="Serving (g)"
             value={serving}
             onChange={(e) => props.handleOnChangeServing(e, props.index, setServing)}
+            sx={(theme) => ({
+                '& .MuiOutlinedInput-input': {
+                    fontSize: isMobile ? theme.typography.body2.fontSize : theme.typography.body1.fontSize
+                },
+                pointerEvents: 'none',
+                '& .MuiOutlinedInput-root': {
+                    '& fieldset': {
+                        borderColor: 'rgba(0, 0, 0, 0.12)',
+                    }
+                }
+            })}
+            size={isMobile ? "small" : "medium"}
         />
     )
 }
