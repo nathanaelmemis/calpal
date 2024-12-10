@@ -27,7 +27,7 @@ export async function addDishEaten(req: Request, res: Response) {
             return
         }
 
-        routeLog(req, `Adding Dish Eaten: ${req.body.userID}`)
+        routeLog(req, `Adding Dish Eaten: ${data.userID}`)
 
         const result = await client.db("CalPal").collection("dishEaten").insertOne(data)
 

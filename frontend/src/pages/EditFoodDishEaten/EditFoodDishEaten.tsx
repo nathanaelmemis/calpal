@@ -202,33 +202,21 @@ export default function EditFoodDishEaten() {
         const dish = dishes.find((dish: Dish) => dish._id === selectedFoodDish.id)
 
         if (dish) {
-            setIsDish(true)
-            setAutocompleteInputValue(dish.name)
-            setSelectedFood({ id: dish._id, name: dish.name })
-            setQuantity(1)
-            setFoodServing([...dish.foods.map((dishFoodItem: DishFood) => dishFoodItem.defaultServing)])
-
-            const selectedDishMacros = {
-                ...calculateDishMacros(
+            setMacrosIncrease(
+                calculateDishMacros(
                     foods,
                     dishes,
                     dish._id,
-                    dish.foods.map((dishFood) => dishFood.defaultServing),
+                    foodServing,
                     grams,
                     quantity
-                )
-            }
-            setMacrosIncrease(selectedDishMacros)
+                ))
             return
         }
 
         const food = foods.find((food: Food) => food._id === selectedFoodDish.id)
 
         if (food) {
-            setIsDish(false)
-            setAutocompleteInputValue(food.name)
-            setSelectedFood({ id: food._id, name: food.name })
-            setQuantity(1)
             setMacrosIncrease({
                 calories: food.calories * grams * quantity,
                 carbs: food.carbs * grams * quantity,
@@ -239,7 +227,7 @@ export default function EditFoodDishEaten() {
         } else {
             console.error('Food/Dish not found:', selectedFoodDish)
         }
-    }, [grams, quantity])
+    }, [grams, quantity, foodServing])
 
     // Update mealCalories when foodEaten or dishEaten changes
     useEffect(() => {

@@ -34,7 +34,7 @@ function addDishEaten(req, res) {
                 res.status(400).send("No dish given.");
                 return;
             }
-            (0, utils_1.routeLog)(req, `Adding Dish Eaten: ${req.body.userID}`);
+            (0, utils_1.routeLog)(req, `Adding Dish Eaten: ${data.userID}`);
             const result = yield database_1.client.db("CalPal").collection("dishEaten").insertOne(data);
             if (!result.insertedId) {
                 throw new Error("Failed to insert dish eaten.");
