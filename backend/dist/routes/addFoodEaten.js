@@ -33,13 +33,13 @@ function addFoodEaten(req, res) {
                 res.status(400).send("No food given.");
                 return;
             }
-            (0, utils_1.routeLog)(req, `Adding Food Eaten: ${req.body.userID}`);
+            (0, utils_1.routeLog)(req, `Adding Food Eaten: ${data.userID}`);
             const result = yield database_1.client.db("CalPal").collection("foodEaten").insertOne(data);
             if (!result.insertedId) {
                 throw new Error("Failed to insert food eaten.");
             }
             (0, utils_1.routeLog)(req, `Food Eaten added: ${result.insertedId}`);
-            res.status(200).send(result.insertedId);
+            res.status(200).send({ _id: result.insertedId, userID: data.userID });
         }
         catch (error) {
             (0, utils_1.routeLog)(req, error.message);

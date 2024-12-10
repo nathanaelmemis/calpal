@@ -40,7 +40,7 @@ function addDishEaten(req, res) {
                 throw new Error("Failed to insert dish eaten.");
             }
             (0, utils_1.routeLog)(req, `Dish Eaten added: ${result.insertedId}`);
-            res.status(200).send(result.insertedId);
+            res.status(200).send({ _id: result.insertedId, userID: data.userID });
         }
         catch (error) {
             (0, utils_1.routeLog)(req, error.message);

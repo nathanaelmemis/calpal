@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import { FoodDishEatenEditing } from '../interfaces/foodDishEatenEditing';
 import { FoodEaten } from '../interfaces/foodEaten';
 import { DishEaten } from '../interfaces/dishEaten';
+import { DataCategory } from '../interfaces/dataCategory';
+import { validateData } from '../utils/validateData';
 
 interface IUserDataContextProviderProps {
     children: ReactElement[] | ReactElement;
@@ -44,7 +46,7 @@ export const UserDataContextProvider = ({ children }: IUserDataContextProviderPr
     })
 
     // Get specified data from API
-    async function getData(collectionsToRetrieve: ('userData' | 'foods' | 'dishes' | 'foodEaten' | 'dishEaten')[]) {
+    async function getData(collectionsToRetrieve: DataCategory[]) {
         setIsFetchingData(true)
 
         try {
@@ -86,6 +88,26 @@ export const UserDataContextProvider = ({ children }: IUserDataContextProviderPr
         setIsFetchingData(false)
     }
 
+    function updateData(categoryToUpdate: DataCategory, dataToAdd: object) {
+        switch (categoryToUpdate) {
+            case 'foodEaten':
+                if (validateData(dataToAdd, foodEaten[0]))
+                    setFoodEaten([...foodEaten, dataToAdd as FoodEaten]) 
+                else
+                    console.error('Data validation failed:', dataToAdd, foodEaten[0])
+                break
+            case 'dishEaten':
+                if (validateData(dataToAdd, dishEaten[0]))
+                    setDishEaten([...dishEaten, dataToAdd as DishEaten])
+                else
+                    console.error('Data validation failed:', dataToAdd)
+                break
+            default:
+                console.error('Category update not implemented:', categoryToUpdate)
+                break
+        }
+    }
+
   return (
     <UserDataContext.Provider 
         value={{ 
@@ -96,6 +118,7 @@ export const UserDataContextProvider = ({ children }: IUserDataContextProviderPr
             foodEaten,
             dishEaten,
             getData,
+            updateData,
             mealType,
             setMealType,
             foodDishEatenEditing,

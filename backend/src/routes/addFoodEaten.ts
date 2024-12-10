@@ -26,7 +26,7 @@ export async function addFoodEaten(req: Request, res: Response) {
             return
         }
 
-        routeLog(req, `Adding Food Eaten: ${req.body.userID}`)
+        routeLog(req, `Adding Food Eaten: ${data.userID}`)
 
         const result = await client.db("CalPal").collection("foodEaten").insertOne(data)
 
@@ -36,7 +36,7 @@ export async function addFoodEaten(req: Request, res: Response) {
         
         routeLog(req, `Food Eaten added: ${result.insertedId}`)
 
-        res.status(200).send(result.insertedId)
+        res.status(200).send({_id: result.insertedId, userID: data.userID})
     } catch (error: any) {
         routeLog(req, error.message)
         res.status(500).send(error)

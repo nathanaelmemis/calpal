@@ -30,7 +30,7 @@ export function AddDishCard({ setIsDish, selectedFoodDish, setSelectedFoodDish, 
         dishes,
         foodEaten,
         dishEaten,
-        getData,
+        updateData,
         mealType
     } = useContext(UserDataContext)
 
@@ -123,16 +123,23 @@ export function AddDishCard({ setIsDish, selectedFoodDish, setSelectedFoodDish, 
             return
         }
 
-        await axios.post('/api/addDishEaten', {
+        const dataToAdd = {
             dishID: selectedFoodDish.id,
             grams: grams,
             quantity: quantity,
             mealType: mealType,
             foodServing: foodServing,
-            date: new Date()
-        })
+            date: new Date().toISOString()
+        }
 
-        await getData(['dishEaten'])
+        const result =  await axios.post('/api/addDishEaten', dataToAdd)
+
+        if (result.status !== 200) {
+            console.error('Failed to add dish eaten:', result.data)
+            return
+        }
+
+        updateData('dishEaten', {...dataToAdd, _id: result.data._id, userID: result.data.userID})
 
         setIsLoading(false)
 

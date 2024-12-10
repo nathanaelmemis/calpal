@@ -37,7 +37,7 @@ export async function addDishEaten(req: Request, res: Response) {
         
         routeLog(req, `Dish Eaten added: ${result.insertedId}`)
 
-        res.status(200).send(result.insertedId)
+        res.status(200).send({_id: result.insertedId, userID: data.userID})
     } catch (error: any) {
         routeLog(req, error.message)
         res.status(500).send(error)

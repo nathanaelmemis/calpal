@@ -6,6 +6,7 @@ import { Meal } from "../interfaces/meal";
 import { FoodDishEatenEditing } from "../interfaces/foodDishEatenEditing";
 import { FoodEaten } from "../interfaces/foodEaten";
 import { DishEaten } from "../interfaces/dishEaten";
+import { DataCategory } from "../interfaces/dataCategory";
 
 interface UserDataContextProps { 
     isFetchingData: boolean
@@ -14,7 +15,8 @@ interface UserDataContextProps {
     dishes: Dish[]
     foodEaten: FoodEaten[]
     dishEaten: DishEaten[]
-    getData: (collectionsToRetrieve: ('userData' | 'foods' | 'dishes' | 'foodEaten' | 'dishEaten')[]) => Promise<void>
+    getData: (collectionsToRetrieve: DataCategory[]) => Promise<void>
+    updateData: (categoryToUpdate: DataCategory, dataToAdd: object) => void
     mealType: Meal
     setMealType: Dispatch<SetStateAction<Meal>>
     foodDishEatenEditing: FoodDishEatenEditing
@@ -39,6 +41,7 @@ export const UserDataContext = createContext<UserDataContextProps>({
     foodEaten: [],
     dishEaten: [],
     getData: async () => {},
+    updateData: async () => {},
     mealType: 'breakfast',
     setMealType: () => {},
     foodDishEatenEditing: {
