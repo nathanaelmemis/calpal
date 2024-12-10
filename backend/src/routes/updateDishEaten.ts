@@ -42,6 +42,10 @@ export async function updateDishEaten(req: Request, res: Response) {
                 if (data[key] === -1) {
                     delete data[key]
                 }
+            } else if (typeof data[key] === "object") {
+                if (data[key].length === 0) {
+                    delete data[key]
+                }
             }
         })
 
@@ -54,7 +58,7 @@ export async function updateDishEaten(req: Request, res: Response) {
 
         routeLog(req, `Dish Eaten Updated: ${userID} ${dishEatenID}`)
 
-        res.status(200).send('Dish Eaten updated.')
+        res.status(200).send({userID: userID})
     } catch (error: any) {
         routeLog(req, error.message)
         res.status(500).send(error)

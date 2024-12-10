@@ -30,7 +30,7 @@ export function AddDishCard({ setIsDish, selectedFoodDish, setSelectedFoodDish, 
         dishes,
         foodEaten,
         dishEaten,
-        updateData,
+        addData,
         mealType
     } = useContext(UserDataContext)
 
@@ -139,7 +139,7 @@ export function AddDishCard({ setIsDish, selectedFoodDish, setSelectedFoodDish, 
             return
         }
 
-        updateData('dishEaten', {...dataToAdd, _id: result.data._id, userID: result.data.userID})
+        addData('dishEaten', {...dataToAdd, _id: result.data._id, userID: result.data.userID})
 
         setIsLoading(false)
 

@@ -55,7 +55,7 @@ function updateFoodEaten(req, res) {
                 throw new Error("Failed to update food eaten.");
             }
             (0, utils_1.routeLog)(req, `Food Eaten Updated: ${userID} ${foodEatenID}`);
-            res.status(200).send(`Food Eaten Updated`);
+            res.status(200).send({ userID: userID });
         }
         catch (error) {
             (0, utils_1.routeLog)(req, error.message);

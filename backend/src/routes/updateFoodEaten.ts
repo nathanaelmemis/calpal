@@ -51,7 +51,7 @@ export async function updateFoodEaten(req: Request, res: Response) {
 
         routeLog(req, `Food Eaten Updated: ${userID} ${foodEatenID}`)
 
-        res.status(200).send(`Food Eaten Updated`)
+        res.status(200).send({ userID: userID })
     } catch (error: any) {
         routeLog(req, error.message)
         res.status(500).send(error)

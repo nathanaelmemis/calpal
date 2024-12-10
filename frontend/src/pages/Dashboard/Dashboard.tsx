@@ -43,6 +43,7 @@ export function Dashboard() {
     } = useContext(UserDataContext)
     
     const isMobile = useMediaQuery(useTheme().breakpoints.down('sm'))
+    const theme = useTheme()
 
     const [breakfastCalories, setBreakfastCalories] = useState(0)
     const [lunchCalories, setLunchCalories] = useState(0)
@@ -126,7 +127,7 @@ export function Dashboard() {
                     setMealType={setMealType}
                     calories={breakfastCalories}
                     caloriesLimit={userData.breakfastCaloriesLimit}
-                    color={getColorFromValue(breakfastCalories, userData.breakfastCaloriesLimit, useTheme())}
+                    color={getColorFromValue(breakfastCalories, userData.breakfastCaloriesLimit, theme)}
                 />
                 <Divider sx={{ my: { sm: '.5em', xs: '.25em'} }}/>
                 <MealGuage 
@@ -136,7 +137,7 @@ export function Dashboard() {
                     setMealType={setMealType}
                     calories={lunchCalories}
                     caloriesLimit={userData.lunchCaloriesLimit}
-                    color={getColorFromValue(lunchCalories, userData.lunchCaloriesLimit, useTheme())}
+                    color={getColorFromValue(lunchCalories, userData.lunchCaloriesLimit, theme)}
                 />
                 <Divider sx={{ my: { sm: '.5em', xs: '.25em'} }}/>
                 <MealGuage 
@@ -146,7 +147,7 @@ export function Dashboard() {
                     setMealType={setMealType}
                     calories={snacksCalories}
                     caloriesLimit={userData.snacksCaloriesLimit}
-                    color={getColorFromValue(snacksCalories, userData.snacksCaloriesLimit, useTheme())}
+                    color={getColorFromValue(snacksCalories, userData.snacksCaloriesLimit, theme)}
                 />
                 <Divider sx={{ my: { sm: '.5em', xs: '.25em'} }}/>
                 <MealGuage 
@@ -156,7 +157,7 @@ export function Dashboard() {
                     setMealType={setMealType}
                     calories={dinnerCalories}
                     caloriesLimit={userData.dinnerCaloriesLimit}
-                    color={getColorFromValue(dinnerCalories, userData.dinnerCaloriesLimit, useTheme())}
+                    color={getColorFromValue(dinnerCalories, userData.dinnerCaloriesLimit, theme)}
                 />
             </Grid>
             

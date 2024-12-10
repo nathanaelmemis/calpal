@@ -63,7 +63,7 @@ function updateFood(req, res) {
             // Update food
             yield database_1.client.db("CalPal").collection("foods").updateOne({ _id: new mongodb_1.ObjectId(foodID), userID: userID }, { $set: data });
             (0, utils_1.routeLog)(req, `Food Updated: ${userID} ${foodID}`);
-            res.status(200).send('Food updated.');
+            res.status(200).send({ userID: userID });
         }
         catch (error) {
             (0, utils_1.routeLog)(req, error.message);

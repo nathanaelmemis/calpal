@@ -108,12 +108,6 @@ function DishFoodItem(props: DishFoodItemProps) {
                 '& .MuiOutlinedInput-input': {
                     fontSize: isMobile ? theme.typography.body2.fontSize : theme.typography.body1.fontSize
                 },
-                pointerEvents: 'none',
-                '& .MuiOutlinedInput-root': {
-                    '& fieldset': {
-                        borderColor: 'rgba(0, 0, 0, 0.12)',
-                    }
-                }
             })}
             size={isMobile ? "small" : "medium"}
         />

@@ -50,6 +50,11 @@ function updateDishEaten(req, res) {
                         delete data[key];
                     }
                 }
+                else if (typeof data[key] === "object") {
+                    if (data[key].length === 0) {
+                        delete data[key];
+                    }
+                }
             });
             // Update dish
             const result = yield database_1.client.db("CalPal").collection("dishEaten").updateOne({ _id: new mongodb_1.ObjectId(dishEatenID), userID: userID }, { $set: data });
@@ -57,7 +62,7 @@ function updateDishEaten(req, res) {
                 throw new Error("Failed to update dish eaten.");
             }
             (0, utils_1.routeLog)(req, `Dish Eaten Updated: ${userID} ${dishEatenID}`);
-            res.status(200).send('Dish Eaten updated.');
+            res.status(200).send({ userID: userID });
         }
         catch (error) {
             (0, utils_1.routeLog)(req, error.message);

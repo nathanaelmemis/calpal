@@ -216,7 +216,7 @@ export function ShowFoodDishEaten() {
                         
                         return (
                             <Grid 
-                                key={foodDishEatenItem.id} 
+                                key={foodDishEatenItem.id+foodDishEatenItem.date}
                                 container
                                 display={'flex'}
                                 my={'.5em'}

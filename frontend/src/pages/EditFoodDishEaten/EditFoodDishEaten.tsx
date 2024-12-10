@@ -39,6 +39,7 @@ export default function EditFoodDishEaten() {
         foodEaten,
         dishEaten,
         getData,
+        updateData,
         foodDishEatenEditing
     } = useContext(UserDataContext)
 
@@ -280,31 +281,56 @@ export default function EditFoodDishEaten() {
 
         try {
             if (isDish) {
+                const dishEatenItem = dishEaten.find((dishEaten: DishEaten) => dishEaten._id === foodDishEatenEditing.foodDishEatenEditingID)
+
+                if (!dishEatenItem) throw new Error('Dish not found')
+
                 const res = await axios.put('/api/updateDishEaten', {
                     dishEatenID: foodDishEatenEditing.foodDishEatenEditingID,
-                    dishID: selectedFoodDish.id,
-                    grams: grams,
-                    quantity: quantity,
-                    mealType: mealType,
-                    foodServing: foodServing
+                    dishID: selectedFoodDish.id !== dishEatenItem.dishID ? selectedFoodDish.id : '',
+                    grams: grams !== dishEatenItem.grams ? grams : -1,
+                    quantity: quantity !== dishEatenItem.quantity ? quantity : -1,
+                    mealType: mealType !== dishEatenItem.mealType ? mealType : '',
+                    foodServing: foodServing !== dishEatenItem.foodServing ? foodServing : []
                 })
 
                 if (res.status === 200) {
-                    await getData(['dishEaten'])
+                    updateData('dishEaten', {
+                        _id: foodDishEatenEditing.foodDishEatenEditingID,
+                        userID: res.data.userID,
+                        dishID: selectedFoodDish.id,
+                        grams: grams,
+                        quantity: quantity,
+                        mealType: mealType,
+                        foodServing: foodServing,
+                        date: dishEatenItem.date
+                    })
                     setIsLoading(false)
                     navigate('/showFoodEaten')
                 }
             } else {
+                const foodEatenItem = foodEaten.find((foodEaten: FoodEaten) => foodEaten._id === foodDishEatenEditing.foodDishEatenEditingID)
+
+                if (!foodEatenItem) throw new Error('Food not found')
+
                 const res = await axios.put('/api/updateFoodEaten', {
                     foodEatenID: foodDishEatenEditing.foodDishEatenEditingID,
-                    foodID: selectedFoodDish.id,
-                    grams: grams,
-                    quantity: quantity,
-                    mealType: mealType
+                    foodID: selectedFoodDish.id !== foodEatenItem.foodID ? selectedFoodDish.id : '',
+                    grams: grams !== foodEatenItem.grams ? grams : -1,
+                    quantity: quantity !== foodEatenItem.quantity ? quantity : -1,
+                    mealType: mealType !== foodEatenItem.mealType ? mealType : ''
                 })
 
                 if (res.status === 200) {
-                    await getData(['foodEaten'])
+                    updateData('foodEaten', {
+                        _id: foodDishEatenEditing.foodDishEatenEditingID,
+                        userID: res.data.userID,
+                        foodID: selectedFoodDish.id,
+                        grams: grams,
+                        quantity: quantity,
+                        mealType: mealType,
+                        date: foodEatenItem.date
+                    })
                     setIsLoading(false)
                     navigate('/showFoodEaten')
                 }

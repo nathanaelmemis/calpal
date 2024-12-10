@@ -16,7 +16,8 @@ interface UserDataContextProps {
     foodEaten: FoodEaten[]
     dishEaten: DishEaten[]
     getData: (collectionsToRetrieve: DataCategory[]) => Promise<void>
-    updateData: (categoryToUpdate: DataCategory, dataToAdd: object) => void
+    addData: (categoryToUpdate: DataCategory, dataToAdd: object) => void
+    updateData: (categoryToUpdate: DataCategory, dataToUpdate: object) => void
     mealType: Meal
     setMealType: Dispatch<SetStateAction<Meal>>
     foodDishEatenEditing: FoodDishEatenEditing
@@ -41,6 +42,7 @@ export const UserDataContext = createContext<UserDataContextProps>({
     foodEaten: [],
     dishEaten: [],
     getData: async () => {},
+    addData: async () => {},
     updateData: async () => {},
     mealType: 'breakfast',
     setMealType: () => {},

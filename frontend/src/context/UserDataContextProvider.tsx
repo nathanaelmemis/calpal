@@ -16,6 +16,28 @@ interface IUserDataContextProviderProps {
     children: ReactElement[] | ReactElement;
 }
 
+const SCHEMAS = {
+    foodEaten: {
+        _id: '',
+        userID: '',
+        foodID: '',
+        grams: 0,
+        quantity: 0,
+        mealType: '',
+        date: ""
+    },
+    dishEaten: {
+        _id: '',
+        userID: '',
+        dishID: '',
+        grams: 0,
+        quantity: 0,
+        mealType: '',
+        foodServing: [0],
+        date: ""
+    }
+}
+
 export const UserDataContextProvider = ({ children }: IUserDataContextProviderProps) => {
     const navigate = useNavigate()
 
@@ -88,19 +110,39 @@ export const UserDataContextProvider = ({ children }: IUserDataContextProviderPr
         setIsFetchingData(false)
     }
 
-    function updateData(categoryToUpdate: DataCategory, dataToAdd: object) {
+    function addData(categoryToUpdate: DataCategory, dataToAdd: object) {
         switch (categoryToUpdate) {
             case 'foodEaten':
-                if (validateData(dataToAdd, foodEaten[0]))
+                if (validateData(dataToAdd, SCHEMAS.foodEaten))
                     setFoodEaten([...foodEaten, dataToAdd as FoodEaten]) 
                 else
                     console.error('Data validation failed:', dataToAdd, foodEaten[0])
                 break
             case 'dishEaten':
-                if (validateData(dataToAdd, dishEaten[0]))
+                if (validateData(dataToAdd, SCHEMAS.dishEaten))
                     setDishEaten([...dishEaten, dataToAdd as DishEaten])
                 else
                     console.error('Data validation failed:', dataToAdd)
+                break
+            default:
+                console.error('Category add not implemented:', categoryToUpdate)
+                break
+        }
+    }
+
+    function updateData(categoryToUpdate: DataCategory, dataToUpdate: object) {
+        switch (categoryToUpdate) {
+            case 'foodEaten':
+                if (validateData(dataToUpdate, SCHEMAS.foodEaten))
+                    setFoodEaten([...foodEaten.filter(food => food._id !== (dataToUpdate as FoodEaten)._id), dataToUpdate as FoodEaten])
+                else
+                    console.error('Data validation failed:', dataToUpdate)
+                break
+            case 'dishEaten':
+                if (validateData(dataToUpdate, SCHEMAS.dishEaten))
+                    setDishEaten([...dishEaten.filter(dish => dish._id !== (dataToUpdate as DishEaten)._id), dataToUpdate as DishEaten])
+                else
+                    console.error('Data validation failed:', dataToUpdate)
                 break
             default:
                 console.error('Category update not implemented:', categoryToUpdate)
@@ -118,6 +160,7 @@ export const UserDataContextProvider = ({ children }: IUserDataContextProviderPr
             foodEaten,
             dishEaten,
             getData,
+            addData,
             updateData,
             mealType,
             setMealType,
