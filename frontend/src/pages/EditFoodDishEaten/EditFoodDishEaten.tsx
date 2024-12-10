@@ -38,8 +38,8 @@ export default function EditFoodDishEaten() {
         dishes,
         foodEaten,
         dishEaten,
-        getData,
         updateData,
+        deleteData,
         foodDishEatenEditing
     } = useContext(UserDataContext)
 
@@ -353,7 +353,8 @@ export default function EditFoodDishEaten() {
             })
 
             if (res.status === 200) {
-                await getData([isDish ? 'dishEaten' : 'foodEaten'])
+                deleteData(isDish ? 'dishEaten' : 'foodEaten', foodDishEatenEditing.foodDishEatenEditingID)
+
                 setIsLoading(false)
                 navigate('/showFoodEaten')
             }

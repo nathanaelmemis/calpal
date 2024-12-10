@@ -150,6 +150,20 @@ export const UserDataContextProvider = ({ children }: IUserDataContextProviderPr
         }
     }
 
+    function deleteData(categoryToDelete: DataCategory, dataToDeleteID: string) {
+        switch (categoryToDelete) {
+            case 'foodEaten':
+                setFoodEaten(foodEaten.filter(food => food._id !== dataToDeleteID))
+                break
+            case 'dishEaten':
+                setDishEaten(dishEaten.filter(dish => dish._id !== dataToDeleteID))
+                break
+            default:
+                console.error('Category delete not implemented:', categoryToDelete)
+                break
+        }
+    }
+
   return (
     <UserDataContext.Provider 
         value={{ 
@@ -162,6 +176,7 @@ export const UserDataContextProvider = ({ children }: IUserDataContextProviderPr
             getData,
             addData,
             updateData,
+            deleteData,
             mealType,
             setMealType,
             foodDishEatenEditing,
