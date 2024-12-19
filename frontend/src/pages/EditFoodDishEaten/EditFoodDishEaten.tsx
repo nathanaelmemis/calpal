@@ -21,6 +21,7 @@ import { Macros } from "../../interfaces/macros";
 import { calculateDishMacros } from "../../utils/calculateDishMacros";
 import { MacrosIncreaseIndicator } from "../../components/MacrosIncreaseIndicator";
 import { formatNumber } from "../../utils/formatNumber";
+import { getColorFromValue } from "../../utils/getColorFromValue";
 
 export default function EditFoodDishEaten() {
     // Check if user is authenticated
@@ -409,6 +410,7 @@ export default function EditFoodDishEaten() {
                     </Typography>
                     <Typography
                         variant={isMobile ? 'body2' : 'body1'}
+                        color={getColorFromValue(formatNumber(mealCalories + caloriesIncrease - currentFoodMacros.calories), userData[mealType + 'CaloriesLimit'] as number, useTheme())}
                     >
                         {`${formatNumber(mealCalories + caloriesIncrease - currentFoodMacros.calories)} / ${userData[mealType + 'CaloriesLimit']} g`}
                     </Typography>

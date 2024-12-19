@@ -8,7 +8,7 @@ import { UserDataContext } from "../context/UserDataContext";
 import { formatNumber } from "../utils/formatNumber";
 import { FoodEaten } from "../interfaces/foodEaten";
 import { calculateDishMacros } from "../utils/calculateDishMacros";
-import { Theme } from "@mui/material/styles";
+import { getColorFromValue } from "../utils/getColorFromValue";
 
 interface MacrosCardProps { 
     caloriesIncrease?: number, 
@@ -86,18 +86,6 @@ export function MacrosCard({ caloriesIncrease = 0, proteinIncrease = 0, carbsInc
             fats: totalFats
         })
     }, [foodEaten, dishEaten])
-
-    function getColorFromValue(value: number, valueLimit: number, theme: Theme) {
-        if (valueLimit - value < -5) {
-            return theme.palette.error.main
-        } else if (valueLimit - value < -2) {
-            return theme.palette.warning.main
-        } else if (Math.abs(valueLimit - value) < 2) {
-            return theme.palette.success.main
-        } else {
-            return theme.palette.secondary.main
-        }
-    }
 
     return (
         <Grid 

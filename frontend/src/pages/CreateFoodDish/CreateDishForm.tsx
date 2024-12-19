@@ -11,7 +11,8 @@ import { DishFood } from "../../interfaces/dishFood";
 
 export function CreateDishForm() {
     const {
-        getData
+        getData,
+        foods
     } = useContext(UserDataContext)
 
     const [refreshTrigger, setRefreshTrigger] = useState<string>(Date.now().toFixed())
@@ -43,8 +44,18 @@ export function CreateDishForm() {
         setIsLoading(true)
 
         try {
+            let tempName = foodName
+            let foodNames: string[] = []
+            if (tempName == '') {
+                dishData.forEach((food) => {
+                    foodNames = [...foodNames, foods.find((f) => f._id === food.foodID)?.name || '']
+                })
+
+                tempName = foodNames.join(' & ')
+            }
+
             const res = await axios.post('/api/createDish', {
-                name: foodName,
+                name: tempName,
                 defaultServing: defaultServing,
                 foods: dishData
             })
