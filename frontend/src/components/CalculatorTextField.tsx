@@ -20,7 +20,7 @@ export function CalculatorTextField({ label, renderTrigger = 0, initialValue, se
     const [errorHelperText, setErrorHelperText] = useState('')
     const [helperText, setHelperText] = useState('')
 
-    const timeoutRef = useRef(0)
+    const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
     useEffect(() => {
         setStringValue(String(initialValue))
