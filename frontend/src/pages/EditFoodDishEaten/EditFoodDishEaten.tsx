@@ -142,7 +142,7 @@ export default function EditFoodDishEaten() {
                     foods,
                     dishes,
                     dish._id,
-                    dish.foods.map((dishFood) => dishFood.defaultServing),
+                    dishEatenItem.foodServing,
                     dishEatenItem.grams,
                     dishEatenItem.quantity
                 )
